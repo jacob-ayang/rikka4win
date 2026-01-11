@@ -94,6 +94,7 @@ private fun DesktopHome(
     var selectedConversation by remember { mutableStateOf<ConversationSummary?>(null) }
     var selectedMessages by remember { mutableStateOf<List<DisplayMessage>>(emptyList()) }
     var selectedNodes by remember { mutableStateOf<List<DesktopMessageNode>>(emptyList()) }
+    var messageRefreshToken by remember { mutableStateOf(0) }
     DisposableEffect(Unit) {
         database.open()
         onDispose { database.close() }
@@ -112,7 +113,7 @@ private fun DesktopHome(
     if (conversations.isEmpty()) {
         loadHistory()
     }
-    LaunchedEffect(selectedConversation?.id) {
+    LaunchedEffect(selectedConversation?.id, messageRefreshToken) {
         val conversationId = selectedConversation?.id
         selectedMessages = if (conversationId != null) {
             database.listConversationMessages(conversationId)
@@ -179,6 +180,18 @@ private fun DesktopHome(
                     selectedConversation = selectedConversation,
                     messages = selectedMessages,
                     nodes = selectedNodes,
+                    onSelectBranch = { node, nextIndex ->
+                        val safeIndex = nextIndex.coerceIn(0, node.messages.lastIndex)
+                        if (safeIndex != node.selectIndex) {
+                            scope.launch(Dispatchers.IO) {
+                                if (database.updateSelectIndex(node.id, safeIndex)) {
+                                    scope.launch {
+                                        messageRefreshToken += 1
+                                    }
+                                }
+                            }
+                        }
+                    },
                 )
                 DesktopSection.HISTORY -> HistoryPanel(
                     conversations = conversations,

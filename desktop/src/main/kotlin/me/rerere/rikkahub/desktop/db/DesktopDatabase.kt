@@ -134,6 +134,21 @@ class DesktopDatabase(
         }
     }
 
+    fun updateSelectIndex(nodeId: String, selectIndex: Int): Boolean {
+        val conn = connection ?: return false
+        val sql = "UPDATE message_node SET select_index = ? WHERE id = ?"
+        return runCatching {
+            conn.prepareStatement(sql).use { statement ->
+                statement.setInt(1, selectIndex)
+                statement.setString(2, nodeId)
+                statement.executeUpdate() > 0
+            }
+        }.getOrElse { error ->
+            logger.error("failed to update select_index", error)
+            false
+        }
+    }
+
     private fun parseSelectedMessage(messagesJson: String, selectIndex: Int): DisplayMessage? {
         val array = json.parseToJsonElement(messagesJson) as? JsonArray ?: return null
         if (array.isEmpty()) return null
