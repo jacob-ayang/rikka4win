@@ -39,6 +39,7 @@ import me.rerere.rikkahub.desktop.settings.totalModelCount
 import me.rerere.rikkahub.desktop.theme.RikkahubDesktopTheme
 import me.rerere.rikkahub.desktop.theme.presetThemeIds
 import me.rerere.rikkahub.desktop.ui.BackupPanel
+import me.rerere.rikkahub.desktop.db.ConversationSummary
 import me.rerere.rikkahub.desktop.ui.ChatPanel
 import me.rerere.rikkahub.desktop.ui.DesktopSection
 import me.rerere.rikkahub.desktop.ui.HistoryPanel
@@ -86,9 +87,25 @@ private fun DesktopHome(
     val s3Sync = remember { DesktopS3Sync(backupManager, logger) }
     val webDavSync = remember { DesktopWebDavSync(backupManager, logger) }
     val database = remember { DesktopDatabase(paths, logger) }
+    var conversations by remember { mutableStateOf<List<ConversationSummary>>(emptyList()) }
+    var selectedConversation by remember { mutableStateOf<ConversationSummary?>(null) }
     DisposableEffect(Unit) {
         database.open()
         onDispose { database.close() }
+    }
+    val loadHistory = {
+        scope.launch(Dispatchers.IO) {
+            val items = database.listConversations()
+            scope.launch {
+                conversations = items
+                if (selectedConversation == null && items.isNotEmpty()) {
+                    selectedConversation = items.first()
+                }
+            }
+        }
+    }
+    if (conversations.isEmpty()) {
+        loadHistory()
     }
     var section by remember { mutableStateOf(DesktopSection.CHAT) }
     Row(
@@ -140,8 +157,13 @@ private fun DesktopHome(
                 color = MaterialTheme.colorScheme.onBackground,
             )
             when (section) {
-                DesktopSection.CHAT -> ChatPanel()
-                DesktopSection.HISTORY -> HistoryPanel()
+                DesktopSection.CHAT -> ChatPanel(selectedConversation = selectedConversation)
+                DesktopSection.HISTORY -> HistoryPanel(
+                    conversations = conversations,
+                    selectedId = selectedConversation?.id,
+                    onSelect = { selectedConversation = it },
+                    onRefresh = { loadHistory() },
+                )
                 DesktopSection.PROVIDERS -> ProvidersPanel(settings = settings)
                 DesktopSection.BACKUP -> BackupPanel(
                     status = status,

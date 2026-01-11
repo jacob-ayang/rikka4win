@@ -11,9 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.rerere.rikkahub.desktop.db.ConversationSummary
 
 @Composable
-fun ChatPanel() {
+fun ChatPanel(selectedConversation: ConversationSummary?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -30,7 +31,7 @@ fun ChatPanel() {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Chat UI scaffolding is ready. Conversation rendering comes next.",
+                text = selectedConversation?.title ?: "Select a conversation to view it here.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
