@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.desktop.db.ConversationSummary
+import me.rerere.rikkahub.desktop.db.DesktopMessageNode
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -23,6 +24,7 @@ import java.time.format.DateTimeFormatter
 fun HistoryPanel(
     conversations: List<ConversationSummary>,
     selectedId: String?,
+    nodes: List<DesktopMessageNode>,
     onSelect: (ConversationSummary) -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -61,6 +63,10 @@ fun HistoryPanel(
             conversations.forEach { conversation ->
                 val isSelected = conversation.id == selectedId
                 val timeText = formatTime(conversation.updateAt)
+                val branchInfo = if (isSelected && nodes.isNotEmpty()) {
+                    val branchCount = nodes.count { it.messages.size > 1 }
+                    if (branchCount > 0) "· Branches: $branchCount" else ""
+                } else ""
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -75,7 +81,7 @@ fun HistoryPanel(
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
-                            text = timeText,
+                            text = "$timeText $branchInfo",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

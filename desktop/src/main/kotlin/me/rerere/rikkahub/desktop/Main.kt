@@ -41,6 +41,7 @@ import me.rerere.rikkahub.desktop.theme.RikkahubDesktopTheme
 import me.rerere.rikkahub.desktop.theme.presetThemeIds
 import me.rerere.rikkahub.desktop.ui.BackupPanel
 import me.rerere.rikkahub.desktop.db.ConversationSummary
+import me.rerere.rikkahub.desktop.db.DesktopMessageNode
 import me.rerere.rikkahub.desktop.db.DisplayMessage
 import me.rerere.rikkahub.desktop.ui.ChatPanel
 import me.rerere.rikkahub.desktop.ui.DesktopSection
@@ -92,6 +93,7 @@ private fun DesktopHome(
     var conversations by remember { mutableStateOf<List<ConversationSummary>>(emptyList()) }
     var selectedConversation by remember { mutableStateOf<ConversationSummary?>(null) }
     var selectedMessages by remember { mutableStateOf<List<DisplayMessage>>(emptyList()) }
+    var selectedNodes by remember { mutableStateOf<List<DesktopMessageNode>>(emptyList()) }
     DisposableEffect(Unit) {
         database.open()
         onDispose { database.close() }
@@ -114,6 +116,11 @@ private fun DesktopHome(
         val conversationId = selectedConversation?.id
         selectedMessages = if (conversationId != null) {
             database.listConversationMessages(conversationId)
+        } else {
+            emptyList()
+        }
+        selectedNodes = if (conversationId != null) {
+            database.listMessageNodes(conversationId)
         } else {
             emptyList()
         }
@@ -171,10 +178,12 @@ private fun DesktopHome(
                 DesktopSection.CHAT -> ChatPanel(
                     selectedConversation = selectedConversation,
                     messages = selectedMessages,
+                    nodes = selectedNodes,
                 )
                 DesktopSection.HISTORY -> HistoryPanel(
                     conversations = conversations,
                     selectedId = selectedConversation?.id,
+                    nodes = selectedNodes,
                     onSelect = { selectedConversation = it },
                     onRefresh = { loadHistory() },
                 )

@@ -99,6 +99,41 @@ class DesktopDatabase(
         }
     }
 
+    fun listMessageNodes(conversationId: String): List<DesktopMessageNode> {
+        val conn = connection ?: return emptyList()
+        val sql = """
+            SELECT id, node_index, select_index, messages
+            FROM message_node
+            WHERE conversation_id = ?
+            ORDER BY node_index ASC
+        """.trimIndent()
+        return runCatching {
+            conn.prepareStatement(sql).use { statement ->
+                statement.setString(1, conversationId)
+                statement.executeQuery().use { rs ->
+                    buildList {
+                        while (rs.next()) {
+                            val messagesJson = rs.getString("messages")
+                            val selectIndex = rs.getInt("select_index")
+                            val messages = parseAllMessages(messagesJson)
+                            add(
+                                DesktopMessageNode(
+                                    id = rs.getString("id"),
+                                    nodeIndex = rs.getInt("node_index"),
+                                    selectIndex = selectIndex,
+                                    messages = messages,
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }.getOrElse { error ->
+            logger.error("failed to load message nodes", error)
+            emptyList()
+        }
+    }
+
     private fun parseSelectedMessage(messagesJson: String, selectIndex: Int): DisplayMessage? {
         val array = json.parseToJsonElement(messagesJson) as? JsonArray ?: return null
         if (array.isEmpty()) return null
@@ -135,6 +170,43 @@ class DesktopDatabase(
             contents = contents,
         )
     }
+
+    private fun parseAllMessages(messagesJson: String): List<DisplayMessage> {
+        val array = json.parseToJsonElement(messagesJson) as? JsonArray ?: return emptyList()
+        return array.mapNotNull { element ->
+            val messageObj = element as? JsonObject ?: return@mapNotNull null
+            val role = messageObj["role"]?.jsonPrimitive?.contentOrNull ?: "UNKNOWN"
+            val parts = messageObj["parts"] as? JsonArray ?: return@mapNotNull DisplayMessage(role, "[Empty]", emptyList())
+            val contents = parts.mapNotNull { part ->
+                val obj = part as? JsonObject ?: return@mapNotNull null
+                when {
+                    obj["text"]?.jsonPrimitive?.contentOrNull != null -> MessageContent.Text(
+                        obj["text"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                    )
+
+                    obj["reasoning"]?.jsonPrimitive?.contentOrNull != null -> MessageContent.Reasoning(
+                        obj["reasoning"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                    )
+
+                    obj["toolName"]?.jsonPrimitive?.contentOrNull != null -> {
+                        val tool = obj["toolName"]?.jsonPrimitive?.contentOrNull
+                        MessageContent.Tool(tool ?: "Tool")
+                    }
+
+                    obj["url"]?.jsonPrimitive?.contentOrNull != null -> MessageContent.Media(
+                        obj["url"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                    )
+
+                    else -> null
+                }
+            }
+            DisplayMessage(
+                role = role,
+                text = contents.joinToString(separator = "\n") { it.summary() }.ifBlank { "[Empty]" },
+                contents = contents,
+            )
+        }
+    }
 }
 
 data class ConversationSummary(
@@ -157,7 +229,7 @@ sealed class MessageContent {
     data class Media(val url: String) : MessageContent()
 }
 
-private fun MessageContent.summary(): String = when (this) {
+internal fun MessageContent.summary(): String = when (this) {
     is MessageContent.Text -> value
     is MessageContent.Reasoning -> "[Reasoning] $value"
     is MessageContent.Tool -> "[Tool] $name"

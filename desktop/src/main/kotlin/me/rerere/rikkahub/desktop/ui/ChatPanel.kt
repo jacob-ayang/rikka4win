@@ -18,12 +18,14 @@ import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.desktop.db.ConversationSummary
 import me.rerere.rikkahub.desktop.db.DisplayMessage
 import me.rerere.rikkahub.desktop.db.MessageContent
+import me.rerere.rikkahub.desktop.db.DesktopMessageNode
 import androidx.compose.material3.OutlinedTextField
 
 @Composable
 fun ChatPanel(
     selectedConversation: ConversationSummary?,
     messages: List<DisplayMessage>,
+    nodes: List<DesktopMessageNode>,
 ) {
     val (draft, setDraft) = remember { mutableStateOf("") }
     Card(
@@ -47,6 +49,22 @@ fun ChatPanel(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (selectedConversation != null) {
+                val branches = nodes.filter { it.messages.size > 1 }
+                if (branches.isNotEmpty()) {
+                    Text(
+                        text = "Branches: ${branches.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                    branches.forEach { node ->
+                        val options = node.messages.joinToString(separator = " | ") { it.text }
+                        Text(
+                            text = "Node ${node.nodeIndex}: ${node.selectIndex + 1}/${node.messages.size} -> $options",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 if (messages.isEmpty()) {
                     Text(
                         text = "No messages loaded yet.",
