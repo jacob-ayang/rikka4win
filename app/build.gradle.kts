@@ -105,7 +105,7 @@ android {
         buildConfig = true
     }
     sourceSets {
-        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
+        getByName("androidTest").assets.srcDirs("$rootDir/shared-android/schemas")
     }
     androidResources {
         generateLocaleConfig = true
@@ -139,9 +139,6 @@ tasks.register("buildAll") {
     description = "Build both APK and AAB"
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
 
 kotlin {
     compilerOptions {
@@ -150,6 +147,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":shared-android"))
     implementation(project(":shared-ui"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
