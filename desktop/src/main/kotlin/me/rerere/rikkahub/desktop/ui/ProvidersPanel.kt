@@ -2,6 +2,7 @@ package me.rerere.rikkahub.desktop.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,7 +11,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.desktop.settings.DesktopSettings
@@ -19,6 +23,7 @@ import me.rerere.rikkahub.desktop.settings.providerDetails
 @Composable
 fun ProvidersPanel(settings: DesktopSettings) {
     val providers = settings.providerDetails()
+    val (expanded, setExpanded) = remember { mutableStateOf(setOf<String>()) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -47,6 +52,7 @@ fun ProvidersPanel(settings: DesktopSettings) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 items(providers) { provider ->
+                    val isExpanded = expanded.contains(provider.name)
                     Card(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -57,11 +63,23 @@ fun ProvidersPanel(settings: DesktopSettings) {
                             modifier = Modifier.padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            Text(
-                                text = "${provider.name} (${provider.type})",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = "${provider.name} (${provider.type})",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                TextButton(onClick = {
+                                    setExpanded(
+                                        if (isExpanded) expanded - provider.name else expanded + provider.name
+                                    )
+                                }) {
+                                    Text(if (isExpanded) "Hide" else "Details")
+                                }
+                            }
                             Text(
                                 text = "Enabled: ${provider.enabled}",
                                 style = MaterialTheme.typography.bodySmall,
@@ -74,19 +92,24 @@ fun ProvidersPanel(settings: DesktopSettings) {
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            if (provider.modelNames.isNotEmpty()) {
-                                val modelsText = buildString {
-                                    append(provider.modelNames.take(5).joinToString())
-                                    if (provider.modelNames.size > 5) append(", ...")
+                            if (isExpanded) {
+                                if (provider.modelNames.isNotEmpty()) {
+                                    val modelsText = provider.modelNames.joinToString()
+                                    Text(
+                                        text = "Models: $modelsText",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                } else {
+                                    Text(
+                                        text = "Models: none",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
-                                Text(
-                                    text = "Models: $modelsText",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
                             } else {
                                 Text(
-                                    text = "Models: none",
+                                    text = "Models: ${provider.modelNames.size}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
