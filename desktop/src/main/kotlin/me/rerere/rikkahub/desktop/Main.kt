@@ -38,31 +38,37 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "RikkaHub",
     ) {
-        RikkahubDesktopTheme {
+        val paths = remember { DesktopPaths() }
+        val settingsStore = remember { DesktopSettingsStore(paths) }
+        var settings by remember { mutableStateOf(settingsStore.load()) }
+        RikkahubDesktopTheme(themeId = settings.themeId) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background,
             ) {
-                DesktopHome()
+                DesktopHome(
+                    paths = paths,
+                    settingsStore = settingsStore,
+                    settings = settings,
+                    onSettingsChanged = { settings = it },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun DesktopHome() {
+private fun DesktopHome(
+    paths: DesktopPaths,
+    settingsStore: DesktopSettingsStore,
+    settings: me.rerere.rikkahub.desktop.settings.DesktopSettings,
+    onSettingsChanged: (me.rerere.rikkahub.desktop.settings.DesktopSettings) -> Unit,
+) {
     val scope = rememberCoroutineScope()
     var status by remember { mutableStateOf("Ready") }
-    val paths = remember { DesktopPaths() }
-    val settingsStore = remember { DesktopSettingsStore(paths) }
-    var settingsLoaded by remember { mutableStateOf(false) }
     val logger = remember { ConsoleBackupLogger() }
     val backupManager = remember { DesktopBackupManager(paths, logger) }
     val database = remember { DesktopDatabase(paths, logger) }
-    if (!settingsLoaded) {
-        settingsStore.load()
-        settingsLoaded = true
-    }
     DisposableEffect(Unit) {
         database.open()
         onDispose { database.close() }
@@ -117,7 +123,7 @@ private fun DesktopHome() {
                     status = "Restoring backup..."
                     database.close()
                     backupManager.restoreBackup(source, setOf(BackupItem.DATABASE, BackupItem.FILES))
-                    settingsStore.load()
+                    onSettingsChanged(settingsStore.load())
                     database.open()
                     status = "Restore finished"
                 }.onFailure { error ->
