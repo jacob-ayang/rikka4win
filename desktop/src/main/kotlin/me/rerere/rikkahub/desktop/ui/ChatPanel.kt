@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.desktop.db.ConversationSummary
 import me.rerere.rikkahub.desktop.db.DisplayMessage
+import me.rerere.rikkahub.desktop.db.MessageContent
 import androidx.compose.material3.OutlinedTextField
 
 @Composable
@@ -55,10 +56,22 @@ fun ChatPanel(
                 } else {
                     messages.forEach { message ->
                         Text(
-                            text = "${message.role}: ${message.text}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            text = "${message.role}:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
                         )
+                        message.contents.forEach { content ->
+                            Text(
+                                text = when (content) {
+                                    is MessageContent.Text -> content.value
+                                    is MessageContent.Reasoning -> "Reasoning: ${content.value}"
+                                    is MessageContent.Tool -> "Tool: ${content.name}"
+                                    is MessageContent.Media -> "Media: ${content.url}"
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                 }
             }

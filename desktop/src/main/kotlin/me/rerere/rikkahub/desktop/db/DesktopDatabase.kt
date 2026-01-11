@@ -105,21 +105,35 @@ class DesktopDatabase(
         val messageIndex = if (selectIndex in array.indices) selectIndex else 0
         val messageObj = array[messageIndex] as? JsonObject ?: return null
         val role = messageObj["role"]?.jsonPrimitive?.contentOrNull ?: "UNKNOWN"
-        val parts = messageObj["parts"] as? JsonArray ?: return DisplayMessage(role, "[Empty]")
-        val text = parts.mapNotNull { part ->
+        val parts = messageObj["parts"] as? JsonArray ?: return DisplayMessage(role, "[Empty]", emptyList())
+        val contents = parts.mapNotNull { part ->
             val obj = part as? JsonObject ?: return@mapNotNull null
             when {
-                obj["text"]?.jsonPrimitive?.contentOrNull != null -> obj["text"]?.jsonPrimitive?.contentOrNull
-                obj["reasoning"]?.jsonPrimitive?.contentOrNull != null -> obj["reasoning"]?.jsonPrimitive?.contentOrNull
+                obj["text"]?.jsonPrimitive?.contentOrNull != null -> MessageContent.Text(
+                    obj["text"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                )
+
+                obj["reasoning"]?.jsonPrimitive?.contentOrNull != null -> MessageContent.Reasoning(
+                    obj["reasoning"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                )
+
                 obj["toolName"]?.jsonPrimitive?.contentOrNull != null -> {
                     val tool = obj["toolName"]?.jsonPrimitive?.contentOrNull
-                    "[Tool] $tool"
+                    MessageContent.Tool(tool ?: "Tool")
                 }
-                obj["url"]?.jsonPrimitive?.contentOrNull != null -> "[Media]"
+
+                obj["url"]?.jsonPrimitive?.contentOrNull != null -> MessageContent.Media(
+                    obj["url"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                )
+
                 else -> null
             }
-        }.joinToString(separator = "\n")
-        return DisplayMessage(role = role, text = if (text.isBlank()) "[Empty]" else text)
+        }
+        return DisplayMessage(
+            role = role,
+            text = contents.joinToString(separator = "\n") { it.summary() }.ifBlank { "[Empty]" },
+            contents = contents,
+        )
     }
 }
 
@@ -133,7 +147,22 @@ data class ConversationSummary(
 data class DisplayMessage(
     val role: String,
     val text: String,
+    val contents: List<MessageContent>,
 )
+
+sealed class MessageContent {
+    data class Text(val value: String) : MessageContent()
+    data class Reasoning(val value: String) : MessageContent()
+    data class Tool(val name: String) : MessageContent()
+    data class Media(val url: String) : MessageContent()
+}
+
+private fun MessageContent.summary(): String = when (this) {
+    is MessageContent.Text -> value
+    is MessageContent.Reasoning -> "[Reasoning] $value"
+    is MessageContent.Tool -> "[Tool] $name"
+    is MessageContent.Media -> "[Media]"
+}
 
 private fun ResultSet.toConversationSummary(): ConversationSummary {
     return ConversationSummary(
