@@ -16,10 +16,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.desktop.db.ConversationSummary
+import me.rerere.rikkahub.desktop.db.DisplayMessage
 import androidx.compose.material3.OutlinedTextField
 
 @Composable
-fun ChatPanel(selectedConversation: ConversationSummary?) {
+fun ChatPanel(
+    selectedConversation: ConversationSummary?,
+    messages: List<DisplayMessage>,
+) {
     val (draft, setDraft) = remember { mutableStateOf("") }
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -42,11 +46,21 @@ fun ChatPanel(selectedConversation: ConversationSummary?) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (selectedConversation != null) {
-                Text(
-                    text = "Messages will appear here once database mapping is wired.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (messages.isEmpty()) {
+                    Text(
+                        text = "No messages loaded yet.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    messages.forEach { message ->
+                        Text(
+                            text = "${message.role}: ${message.text}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),

@@ -2,6 +2,11 @@ package me.rerere.rikkahub.desktop.db
 
 import me.rerere.backup.BackupLogger
 import me.rerere.rikkahub.desktop.backup.DesktopPaths
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
@@ -11,6 +16,10 @@ class DesktopDatabase(
     private val logger: BackupLogger,
 ) {
     private var connection: Connection? = null
+    private val json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
 
     fun open() {
         if (connection != null) return
@@ -61,6 +70,57 @@ class DesktopDatabase(
             emptyList()
         }
     }
+
+    fun listConversationMessages(conversationId: String): List<DisplayMessage> {
+        val conn = connection ?: return emptyList()
+        val sql = """
+            SELECT messages, select_index
+            FROM message_node
+            WHERE conversation_id = ?
+            ORDER BY node_index ASC
+        """.trimIndent()
+        return runCatching {
+            conn.prepareStatement(sql).use { statement ->
+                statement.setString(1, conversationId)
+                statement.executeQuery().use { rs ->
+                    buildList {
+                        while (rs.next()) {
+                            val messagesJson = rs.getString("messages")
+                            val selectIndex = rs.getInt("select_index")
+                            val message = parseSelectedMessage(messagesJson, selectIndex)
+                            if (message != null) add(message)
+                        }
+                    }
+                }
+            }
+        }.getOrElse { error ->
+            logger.error("failed to load messages", error)
+            emptyList()
+        }
+    }
+
+    private fun parseSelectedMessage(messagesJson: String, selectIndex: Int): DisplayMessage? {
+        val array = json.parseToJsonElement(messagesJson) as? JsonArray ?: return null
+        if (array.isEmpty()) return null
+        val messageIndex = if (selectIndex in array.indices) selectIndex else 0
+        val messageObj = array[messageIndex] as? JsonObject ?: return null
+        val role = messageObj["role"]?.jsonPrimitive?.contentOrNull ?: "UNKNOWN"
+        val parts = messageObj["parts"] as? JsonArray ?: return DisplayMessage(role, "[Empty]")
+        val text = parts.mapNotNull { part ->
+            val obj = part as? JsonObject ?: return@mapNotNull null
+            when {
+                obj["text"]?.jsonPrimitive?.contentOrNull != null -> obj["text"]?.jsonPrimitive?.contentOrNull
+                obj["reasoning"]?.jsonPrimitive?.contentOrNull != null -> obj["reasoning"]?.jsonPrimitive?.contentOrNull
+                obj["toolName"]?.jsonPrimitive?.contentOrNull != null -> {
+                    val tool = obj["toolName"]?.jsonPrimitive?.contentOrNull
+                    "[Tool] $tool"
+                }
+                obj["url"]?.jsonPrimitive?.contentOrNull != null -> "[Media]"
+                else -> null
+            }
+        }.joinToString(separator = "\n")
+        return DisplayMessage(role = role, text = if (text.isBlank()) "[Empty]" else text)
+    }
 }
 
 data class ConversationSummary(
@@ -68,6 +128,11 @@ data class ConversationSummary(
     val title: String,
     val updateAt: Long,
     val isPinned: Boolean,
+)
+
+data class DisplayMessage(
+    val role: String,
+    val text: String,
 )
 
 private fun ResultSet.toConversationSummary(): ConversationSummary {

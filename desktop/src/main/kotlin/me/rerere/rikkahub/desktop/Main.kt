@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,6 +41,7 @@ import me.rerere.rikkahub.desktop.theme.RikkahubDesktopTheme
 import me.rerere.rikkahub.desktop.theme.presetThemeIds
 import me.rerere.rikkahub.desktop.ui.BackupPanel
 import me.rerere.rikkahub.desktop.db.ConversationSummary
+import me.rerere.rikkahub.desktop.db.DisplayMessage
 import me.rerere.rikkahub.desktop.ui.ChatPanel
 import me.rerere.rikkahub.desktop.ui.DesktopSection
 import me.rerere.rikkahub.desktop.ui.HistoryPanel
@@ -89,6 +91,7 @@ private fun DesktopHome(
     val database = remember { DesktopDatabase(paths, logger) }
     var conversations by remember { mutableStateOf<List<ConversationSummary>>(emptyList()) }
     var selectedConversation by remember { mutableStateOf<ConversationSummary?>(null) }
+    var selectedMessages by remember { mutableStateOf<List<DisplayMessage>>(emptyList()) }
     DisposableEffect(Unit) {
         database.open()
         onDispose { database.close() }
@@ -106,6 +109,14 @@ private fun DesktopHome(
     }
     if (conversations.isEmpty()) {
         loadHistory()
+    }
+    LaunchedEffect(selectedConversation?.id) {
+        val conversationId = selectedConversation?.id
+        selectedMessages = if (conversationId != null) {
+            database.listConversationMessages(conversationId)
+        } else {
+            emptyList()
+        }
     }
     var section by remember { mutableStateOf(DesktopSection.CHAT) }
     Row(
@@ -157,7 +168,10 @@ private fun DesktopHome(
                 color = MaterialTheme.colorScheme.onBackground,
             )
             when (section) {
-                DesktopSection.CHAT -> ChatPanel(selectedConversation = selectedConversation)
+                DesktopSection.CHAT -> ChatPanel(
+                    selectedConversation = selectedConversation,
+                    messages = selectedMessages,
+                )
                 DesktopSection.HISTORY -> HistoryPanel(
                     conversations = conversations,
                     selectedId = selectedConversation?.id,
