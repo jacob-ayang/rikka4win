@@ -13,6 +13,8 @@ plugins {
     alias(libs.plugins.firebase.crashlytics)
 }
 
+val appVersionName = (project.findProperty("rikkahub.version") as String?) ?: "1.7.8"
+
 android {
     namespace = "me.rerere.rikkahub"
     compileSdk = 36
@@ -22,7 +24,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 125
-        versionName = "1.7.8"
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

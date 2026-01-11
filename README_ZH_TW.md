@@ -2,11 +2,11 @@
   <img src="docs/icon.png" alt="App 圖標" width="100" />
   <h1>RikkaHub</h1>
 
-一個原生Android LLM 聊天客戶端，支持切換不同的供應商進行聊天 🤖💬
-
-點擊加入我們的Discord伺服器 👉 [【RikkaHub】](https://discord.gg/9weBqxe5c4)
+一個原生 Android + Windows 桌面 LLM 聊天客戶端，支持切換不同供應商並保留 Material You 設計 🤖💬
 
 [English](README.md) | 繁體中文 | [简体中文](README_ZH_CN.md)
+
+點擊加入我們的Discord伺服器 👉 [【RikkaHub】](https://discord.gg/9weBqxe5c4)
 
 </div>
 
@@ -22,22 +22,17 @@
 🔗 [前往官網下載](https://rikka-ai.com/download)
 🔗 [前往 Google Play 下載](https://play.google.com/store/apps/details?id=me.rerere.rikkahub)
 
-## 💖 贊助商
+桌面端 Windows EXE 可透過 GitHub Actions 構建後下載（見下方說明）。
 
-<div align="center">
-  <img src="app/src/main/assets/icons/aihubmix-color.svg" alt="Aihubmix" width="50" />
-  <p style="font-size: 16px; font-weight: bold;">Aihubmix</p>
-  <p style="font-size: 14px;">感謝 <a href="https://aihubmix.com?aff=pG7r">aihubmix.com</a> 的資金支持。我們推薦使用 aihubmix 作為全球主流模型的一站式服務平台。（OpenAI、Claude、Google Gemini、DeepSeek、Qwen 以及數百種其他模型）。</p>
-</div>
-<div align="center">
-  <img src="app/src/main/assets/icons/siliconflow.svg" alt="SiliconFlow" width="50" />
-  <p style="font-size: 16px; font-weight: bold;">SiliconFlow</p>
-  <p style="font-size: 14px;">感謝 <a href="https://siliconflow.cn/">siliconflow.cn</a> 與我們合作提供免費模型。</p>
-</div>
+## 🖥️ 桌面端說明
+
+- Compose Multiplatform 桌面 UI，保留 Material You 視覺氛圍
+- 與安卓備份格式相容：`settings.json` + `rikka_hub.db` + `upload/`
+- 支援本地備份/還原、WebDAV、S3 備份同步
 
 ## ✨ 功能特色
 
-- 🎨 現代化安卓APP設計（Material You / 預測性返回）
+- 🎨 現代化安卓設計（Material You / 預測性返回）
 - 🌙 暗色模式
 - 🛠️ MCP 支持
 - 🔄 多種類型的供應商支持，自定義 API / URL / 模型（目前支持 OpenAI、Google、Anthropic）
@@ -51,6 +46,31 @@
 - 📝 AI翻譯
 - 🌐 自定義HTTP請求頭和請求體
 
+## 🛠️ 構建
+
+> [!TIP]
+> 你需要在 `app` 資料夾下添加 `google-services.json` 檔案才能構建 Android 應用。
+
+### Android
+
+```
+./gradlew :app:assembleDebug
+```
+
+### Desktop
+
+需要 JDK 17：
+
+```
+./gradlew :desktop:build --no-daemon
+```
+
+## 🧩 Windows EXE（GitHub Actions）
+
+1. 開啟 GitHub Actions，選擇 `Desktop Windows EXE`。
+2. 點擊 `Run workflow`。
+3. 構建完成後下載 artifact：`rikkahub-desktop-exe`（包含 exe）。
+
 ## ✨ 貢獻
 
 本項目使用[Android Studio](https://developer.android.com/studio)開發，歡迎提交PR
@@ -60,8 +80,7 @@
 - [Kotlin](https://kotlinlang.org/) (開發語言)
 - [Koin](https://insert-koin.io/) (依賴注入)
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) (UI 框架)
-- [DataStore](https://developer.android.com/topic/libraries/architecture/datastore?hl=zh-cn#preferences-datastore) (
-  偏好數據存儲)
+- [DataStore](https://developer.android.com/topic/libraries/architecture/datastore?hl=zh-cn#preferences-datastore) (偏好數據存儲)
 - [Room](https://developer.android.com/training/data-storage/room) (數據庫)
 - [Coil](https://coil-kt.github.io/coil/) (圖片加載)
 - [Material You](https://m3.material.io/) (UI 設計)
@@ -70,14 +89,24 @@
 - [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization) (Json序列化)
 - [compose-icons/lucide](https://composeicons.com/icon-libraries/lucide) (圖標庫)
 
-> [!TIP]
-> 你需要在 `app` 資料夾下添加 `google-services.json` 檔案才能構建應用。
-
 > [!IMPORTANT]  
 > 以下PR將被拒絕：
 > 1. 添加新語言，因為添加新語言會增加後續本地化的工作量
 > 2. 添加新功能，這個項目是有態度的
 > 3. AI生成的大規模重構和更改
+
+## 💖 贊助商
+
+<div align="center">
+  <img src="app/src/main/assets/icons/aihubmix-color.svg" alt="Aihubmix" width="50" />
+  <p style="font-size: 16px; font-weight: bold;">Aihubmix</p>
+  <p style="font-size: 14px;">感謝 <a href="https://aihubmix.com?aff=pG7r">aihubmix.com</a> 的資金支持。我們推薦使用 aihubmix 作為全球主流模型的一站式服務平台。（OpenAI、Claude、Google Gemini、DeepSeek、Qwen 以及數百種其他模型）。</p>
+</div>
+<div align="center">
+  <img src="app/src/main/assets/icons/siliconflow.svg" alt="SiliconFlow" width="50" />
+  <p style="font-size: 16px; font-weight: bold;">SiliconFlow</p>
+  <p style="font-size: 14px;">感謝 <a href="https://siliconflow.cn/">siliconflow.cn</a> 與我們合作提供免費模型。</p>
+</div>
 
 ## 💰 捐贈
 
@@ -92,4 +121,4 @@
 
 ## 📄 許可證
 
-[License](LICENSE) 
+[License](LICENSE)

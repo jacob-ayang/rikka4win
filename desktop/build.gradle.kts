@@ -11,13 +11,15 @@ kotlin {
     }
 }
 
+val desktopVersion = (rootProject.findProperty("rikkahub.version") as String?) ?: "1.7.8"
+
 compose.desktop {
     application {
         mainClass = "me.rerere.rikkahub.desktop.MainKt"
         nativeDistributions {
             targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
             packageName = "RikkaHub"
-            packageVersion = "1.0.0"
+            packageVersion = desktopVersion
         }
     }
 }
