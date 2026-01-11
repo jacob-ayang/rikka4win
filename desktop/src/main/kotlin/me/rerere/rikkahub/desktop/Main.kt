@@ -24,9 +24,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rerere.backup.BackupItem
 import me.rerere.backup.BackupLogger
-import me.rerere.rikkahub.desktop.db.DesktopDatabase
 import me.rerere.rikkahub.desktop.backup.DesktopBackupManager
 import me.rerere.rikkahub.desktop.backup.DesktopPaths
+import me.rerere.rikkahub.desktop.backup.DesktopWebDavSync
+import me.rerere.rikkahub.desktop.db.DesktopDatabase
 import kotlinx.serialization.json.JsonArray
 import me.rerere.rikkahub.desktop.settings.DesktopSettingsStore
 import me.rerere.rikkahub.desktop.settings.totalModelCount
@@ -71,6 +72,7 @@ private fun DesktopHome(
     var status by remember { mutableStateOf("Ready") }
     val logger = remember { ConsoleBackupLogger() }
     val backupManager = remember { DesktopBackupManager(paths, logger) }
+    val webDavSync = remember { DesktopWebDavSync(backupManager, logger) }
     val database = remember { DesktopDatabase(paths, logger) }
     DisposableEffect(Unit) {
         database.open()
@@ -149,6 +151,49 @@ private fun DesktopHome(
             }
         }) {
             Text("Restore from backup zip")
+        }
+        Button(onClick = {
+            scope.launch(Dispatchers.IO) {
+                runCatching {
+                    val config = settings.webDavConfig
+                    if (config.url.isBlank()) {
+                        status = "WebDAV config missing"
+                        return@launch
+                    }
+                    status = "WebDAV backup..."
+                    webDavSync.backup(config)
+                    status = "WebDAV backup uploaded"
+                }.onFailure { error ->
+                    status = "WebDAV backup failed: ${error.message}"
+                }
+            }
+        }) {
+            Text("WebDAV backup")
+        }
+        Button(onClick = {
+            scope.launch(Dispatchers.IO) {
+                runCatching {
+                    val config = settings.webDavConfig
+                    if (config.url.isBlank()) {
+                        status = "WebDAV config missing"
+                        return@launch
+                    }
+                    status = "WebDAV restore latest..."
+                    database.close()
+                    val restored = webDavSync.restoreLatest(config)
+                    onSettingsChanged(settingsStore.load())
+                    database.open()
+                    status = if (restored != null) {
+                        "WebDAV restored: ${restored.displayName}"
+                    } else {
+                        "No WebDAV backups found"
+                    }
+                }.onFailure { error ->
+                    status = "WebDAV restore failed: ${error.message}"
+                }
+            }
+        }) {
+            Text("WebDAV restore latest")
         }
         Text(
             text = status,

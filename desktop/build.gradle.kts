@@ -22,5 +22,7 @@ dependencies {
     implementation(compose.material3)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp)
+    implementation(libs.dav4jvm)
     implementation(libs.sqlite.jdbc)
 }

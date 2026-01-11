@@ -8,7 +8,7 @@ import me.rerere.backup.BackupPaths
 import java.io.File
 
 class DesktopBackupManager(
-    private val paths: DesktopPaths,
+    val paths: DesktopPaths,
     private val logger: BackupLogger,
 ) {
     fun createBackup(items: Set<BackupItem>): File {
