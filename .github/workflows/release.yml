@@ -12,44 +12,44 @@ on:
         default: "false"
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "17"
-
-      - name: Gradle cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-
-      - name: Prepare build files
-        run: |
-          echo "${{ secrets.KEY_BASE64 }}" | base64 -d > app/app.key
-          echo "${{ secrets.SIGNING_CONFIG }}" > local.properties
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
-
-      - name: Build APK
-        run: |
-          chmod +x gradlew
-          ./gradlew :app:assembleRelease --no-daemon
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: apk
-          path: app/build/outputs/apk/release/*.apk
+  # build-android:
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #
+  #     - name: Set up JDK
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         distribution: "temurin"
+  #         java-version: "17"
+  #
+  #     - name: Gradle cache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ~/.gradle/caches
+  #           ~/.gradle/wrapper
+  #         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+  #
+  #     - name: Prepare build files
+  #       run: |
+  #         echo "${{ secrets.KEY_BASE64 }}" | base64 -d > app/app.key
+  #         echo "${{ secrets.SIGNING_CONFIG }}" > local.properties
+  #         echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+  #
+  #     - name: Build APK
+  #       run: |
+  #         chmod +x gradlew
+  #         ./gradlew :app:assembleRelease --no-daemon
+  #
+  #     - name: Upload APK
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: apk
+  #         path: app/build/outputs/apk/release/*.apk
 
   build-desktop:
     runs-on: windows-latest
@@ -73,34 +73,28 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      - name: Build EXE
+      - name: Build portable ZIP
         shell: bash
         run: |
           chmod +x gradlew
-          ./gradlew :desktop:packageExe --no-daemon
+          ./gradlew :desktop:packageZip --no-daemon
 
-      - name: Upload EXE
+      - name: Upload ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: exe
-          path: desktop/build/compose/binaries/main/exe/*.exe
+          name: portable-zip
+          path: desktop/build/compose/binaries/main/zip/*.zip
 
   release:
-    needs: [build-android, build-desktop]
+    needs: [build-desktop]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download APK
+      - name: Download ZIP
         uses: actions/download-artifact@v4
         with:
-          name: apk
-          path: dist/apk
-
-      - name: Download EXE
-        uses: actions/download-artifact@v4
-        with:
-          name: exe
-          path: dist/exe
+          name: portable-zip
+          path: dist/portable-zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -109,5 +103,4 @@ jobs:
           name: ${{ inputs.tag }}
           prerelease: ${{ inputs.prerelease }}
           files: |
-            dist/apk/*.apk
-            dist/exe/*.exe
+            dist/portable-zip/*.zip

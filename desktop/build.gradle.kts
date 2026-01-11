@@ -16,7 +16,10 @@ compose.desktop {
     application {
         mainClass = "me.rerere.rikkahub.desktop.MainKt"
         nativeDistributions {
-            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
+            targetFormats(
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Zip
+            )
             packageName = "RikkaHub"
             packageVersion = desktopVersion
         }
