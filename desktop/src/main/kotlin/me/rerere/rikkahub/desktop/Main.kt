@@ -26,6 +26,7 @@ import me.rerere.backup.BackupItem
 import me.rerere.backup.BackupLogger
 import me.rerere.rikkahub.desktop.backup.DesktopBackupManager
 import me.rerere.rikkahub.desktop.backup.DesktopPaths
+import me.rerere.rikkahub.desktop.backup.DesktopS3Sync
 import me.rerere.rikkahub.desktop.backup.DesktopWebDavSync
 import me.rerere.rikkahub.desktop.db.DesktopDatabase
 import kotlinx.serialization.json.JsonArray
@@ -72,6 +73,7 @@ private fun DesktopHome(
     var status by remember { mutableStateOf("Ready") }
     val logger = remember { ConsoleBackupLogger() }
     val backupManager = remember { DesktopBackupManager(paths, logger) }
+    val s3Sync = remember { DesktopS3Sync(backupManager, logger) }
     val webDavSync = remember { DesktopWebDavSync(backupManager, logger) }
     val database = remember { DesktopDatabase(paths, logger) }
     DisposableEffect(Unit) {
@@ -194,6 +196,49 @@ private fun DesktopHome(
             }
         }) {
             Text("WebDAV restore latest")
+        }
+        Button(onClick = {
+            scope.launch(Dispatchers.IO) {
+                runCatching {
+                    val config = settings.s3Config
+                    if (config.endpoint.isBlank() || config.bucket.isBlank()) {
+                        status = "S3 config missing"
+                        return@launch
+                    }
+                    status = "S3 backup..."
+                    s3Sync.backup(config)
+                    status = "S3 backup uploaded"
+                }.onFailure { error ->
+                    status = "S3 backup failed: ${error.message}"
+                }
+            }
+        }) {
+            Text("S3 backup")
+        }
+        Button(onClick = {
+            scope.launch(Dispatchers.IO) {
+                runCatching {
+                    val config = settings.s3Config
+                    if (config.endpoint.isBlank() || config.bucket.isBlank()) {
+                        status = "S3 config missing"
+                        return@launch
+                    }
+                    status = "S3 restore latest..."
+                    database.close()
+                    val restored = s3Sync.restoreLatest(config)
+                    onSettingsChanged(settingsStore.load())
+                    database.open()
+                    status = if (restored != null) {
+                        "S3 restored: ${restored.displayName}"
+                    } else {
+                        "No S3 backups found"
+                    }
+                }.onFailure { error ->
+                    status = "S3 restore failed: ${error.message}"
+                }
+            }
+        }) {
+            Text("S3 restore latest")
         }
         Text(
             text = status,

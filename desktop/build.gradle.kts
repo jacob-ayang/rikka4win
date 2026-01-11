@@ -25,4 +25,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.dav4jvm)
     implementation(libs.sqlite.jdbc)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
 }
