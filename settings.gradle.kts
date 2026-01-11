@@ -9,6 +9,7 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://repo.itextsupport.com/android")
     }
     resolutionStrategy {
@@ -24,6 +25,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://jitpack.io")
         mavenLocal()
     }
@@ -37,3 +39,5 @@ include(":search")
 include(":tts")
 include(":common")
 include(":document")
+include(":shared-ui")
+include(":desktop")
