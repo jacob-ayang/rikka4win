@@ -2,8 +2,12 @@ package me.rerere.rikkahub.desktop
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -34,6 +38,11 @@ import me.rerere.rikkahub.desktop.settings.DesktopSettingsStore
 import me.rerere.rikkahub.desktop.settings.totalModelCount
 import me.rerere.rikkahub.desktop.theme.RikkahubDesktopTheme
 import me.rerere.rikkahub.desktop.theme.presetThemeIds
+import me.rerere.rikkahub.desktop.ui.BackupPanel
+import me.rerere.rikkahub.desktop.ui.ChatPanel
+import me.rerere.rikkahub.desktop.ui.DesktopSection
+import me.rerere.rikkahub.desktop.ui.HistoryPanel
+import me.rerere.rikkahub.desktop.ui.NavPanel
 import me.rerere.rikkahub.desktop.ui.ProvidersPanel
 import java.awt.FileDialog
 import java.awt.Frame
@@ -81,172 +90,80 @@ private fun DesktopHome(
         database.open()
         onDispose { database.close() }
     }
-    Column(
+    var section by remember { mutableStateOf(DesktopSection.CHAT) }
+    Row(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(
-            text = "RikkaHub Desktop",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = "Desktop build is wiring up core logic and backup compatibility.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        val providerCount = (settings.providers as? JsonArray)?.size ?: 0
-        Text(
-            text = "Theme: ${settings.themeId}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Text(
-            text = "Providers: $providerCount, Models: ${settings.totalModelCount()}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        ProvidersPanel(settings = settings)
-        Button(onClick = {
-            val currentIndex = presetThemeIds.indexOf(settings.themeId).coerceAtLeast(0)
-            val nextTheme = presetThemeIds[(currentIndex + 1) % presetThemeIds.size]
-            settingsStore.update { it.copy(themeId = nextTheme) }
-            onSettingsChanged(settingsStore.settings)
-        }) {
-            Text("Cycle theme")
-        }
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                runCatching {
-                    status = "Creating backup..."
-                    val backupFile = backupManager.createBackup(setOf(BackupItem.DATABASE, BackupItem.FILES))
-                    val target = selectSaveFile() ?: run {
-                        status = "Backup canceled"
-                        return@launch
-                    }
-                    backupFile.copyTo(target, overwrite = true)
-                    status = "Backup saved: ${target.name}"
-                }.onFailure { error ->
-                    status = "Backup failed: ${error.message}"
-                }
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(200.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = "RikkaHub Desktop",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            NavPanel(active = section, onSelect = { section = it })
+            Button(onClick = {
+                val currentIndex = presetThemeIds.indexOf(settings.themeId).coerceAtLeast(0)
+                val nextTheme = presetThemeIds[(currentIndex + 1) % presetThemeIds.size]
+                settingsStore.update { it.copy(themeId = nextTheme) }
+                onSettingsChanged(settingsStore.settings)
+            }) {
+                Text("Cycle theme")
             }
-        }) {
-            Text("Create backup zip")
+            Text(
+                text = status,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
         }
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                runCatching {
-                    val source = selectOpenFile() ?: run {
-                        status = "Restore canceled"
-                        return@launch
-                    }
-                    status = "Restoring backup..."
-                    database.close()
-                    backupManager.restoreBackup(source, setOf(BackupItem.DATABASE, BackupItem.FILES))
-                    onSettingsChanged(settingsStore.load())
-                    database.open()
-                    status = "Restore finished"
-                }.onFailure { error ->
-                    status = "Restore failed: ${error.message}"
-                }
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.Start,
+        ) {
+            val providerCount = (settings.providers as? JsonArray)?.size ?: 0
+            Text(
+                text = "Theme: ${settings.themeId}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = "Providers: $providerCount, Models: ${settings.totalModelCount()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            when (section) {
+                DesktopSection.CHAT -> ChatPanel()
+                DesktopSection.HISTORY -> HistoryPanel()
+                DesktopSection.PROVIDERS -> ProvidersPanel(settings = settings)
+                DesktopSection.BACKUP -> BackupPanel(
+                    status = status,
+                    onStatusChange = { status = it },
+                    onBackup = {
+                        val backupFile = backupManager.createBackup(setOf(BackupItem.DATABASE, BackupItem.FILES))
+                        val target = selectSaveFile()
+                        if (target != null) backupFile.copyTo(target, overwrite = true)
+                    },
+                    onRestore = { file ->
+                        database.close()
+                        backupManager.restoreBackup(file, setOf(BackupItem.DATABASE, BackupItem.FILES))
+                        onSettingsChanged(settingsStore.load())
+                        database.open()
+                    },
+                    onWebDavBackup = { webDavSync.backup(settings.webDavConfig) },
+                    onWebDavRestoreLatest = { webDavSync.restoreLatest(settings.webDavConfig) },
+                    onS3Backup = { s3Sync.backup(settings.s3Config) },
+                    onS3RestoreLatest = { s3Sync.restoreLatest(settings.s3Config) },
+                )
             }
-        }) {
-            Text("Restore from backup zip")
         }
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                runCatching {
-                    val config = settings.webDavConfig
-                    if (config.url.isBlank()) {
-                        status = "WebDAV config missing"
-                        return@launch
-                    }
-                    status = "WebDAV backup..."
-                    webDavSync.backup(config)
-                    status = "WebDAV backup uploaded"
-                }.onFailure { error ->
-                    status = "WebDAV backup failed: ${error.message}"
-                }
-            }
-        }) {
-            Text("WebDAV backup")
-        }
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                runCatching {
-                    val config = settings.webDavConfig
-                    if (config.url.isBlank()) {
-                        status = "WebDAV config missing"
-                        return@launch
-                    }
-                    status = "WebDAV restore latest..."
-                    database.close()
-                    val restored = webDavSync.restoreLatest(config)
-                    onSettingsChanged(settingsStore.load())
-                    database.open()
-                    status = if (restored != null) {
-                        "WebDAV restored: ${restored.displayName}"
-                    } else {
-                        "No WebDAV backups found"
-                    }
-                }.onFailure { error ->
-                    status = "WebDAV restore failed: ${error.message}"
-                }
-            }
-        }) {
-            Text("WebDAV restore latest")
-        }
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                runCatching {
-                    val config = settings.s3Config
-                    if (config.endpoint.isBlank() || config.bucket.isBlank()) {
-                        status = "S3 config missing"
-                        return@launch
-                    }
-                    status = "S3 backup..."
-                    s3Sync.backup(config)
-                    status = "S3 backup uploaded"
-                }.onFailure { error ->
-                    status = "S3 backup failed: ${error.message}"
-                }
-            }
-        }) {
-            Text("S3 backup")
-        }
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                runCatching {
-                    val config = settings.s3Config
-                    if (config.endpoint.isBlank() || config.bucket.isBlank()) {
-                        status = "S3 config missing"
-                        return@launch
-                    }
-                    status = "S3 restore latest..."
-                    database.close()
-                    val restored = s3Sync.restoreLatest(config)
-                    onSettingsChanged(settingsStore.load())
-                    database.open()
-                    status = if (restored != null) {
-                        "S3 restored: ${restored.displayName}"
-                    } else {
-                        "No S3 backups found"
-                    }
-                }.onFailure { error ->
-                    status = "S3 restore failed: ${error.message}"
-                }
-            }
-        }) {
-            Text("S3 restore latest")
-        }
-        Text(
-            text = status,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
     }
 }
 
