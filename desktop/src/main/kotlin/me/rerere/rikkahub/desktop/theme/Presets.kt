@@ -401,6 +401,8 @@ internal val presetThemes = listOf(
     ),
 )
 
+internal val presetThemeIds = presetThemes.map { it.id }
+
 internal fun findPresetTheme(themeId: String): PresetTheme {
     return presetThemes.find { it.id == themeId } ?: presetThemes.first()
 }

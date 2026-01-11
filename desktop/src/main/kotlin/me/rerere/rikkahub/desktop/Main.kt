@@ -31,6 +31,7 @@ import kotlinx.serialization.json.JsonArray
 import me.rerere.rikkahub.desktop.settings.DesktopSettingsStore
 import me.rerere.rikkahub.desktop.settings.totalModelCount
 import me.rerere.rikkahub.desktop.theme.RikkahubDesktopTheme
+import me.rerere.rikkahub.desktop.theme.presetThemeIds
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
@@ -103,6 +104,14 @@ private fun DesktopHome(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        Button(onClick = {
+            val currentIndex = presetThemeIds.indexOf(settings.themeId).coerceAtLeast(0)
+            val nextTheme = presetThemeIds[(currentIndex + 1) % presetThemeIds.size]
+            settingsStore.update { it.copy(themeId = nextTheme) }
+            onSettingsChanged(settingsStore.settings)
+        }) {
+            Text("Cycle theme")
+        }
         Button(onClick = {
             scope.launch(Dispatchers.IO) {
                 runCatching {
