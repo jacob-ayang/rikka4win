@@ -27,7 +27,9 @@ import me.rerere.backup.BackupLogger
 import me.rerere.rikkahub.desktop.db.DesktopDatabase
 import me.rerere.rikkahub.desktop.backup.DesktopBackupManager
 import me.rerere.rikkahub.desktop.backup.DesktopPaths
+import kotlinx.serialization.json.JsonArray
 import me.rerere.rikkahub.desktop.settings.DesktopSettingsStore
+import me.rerere.rikkahub.desktop.settings.totalModelCount
 import me.rerere.rikkahub.desktop.theme.RikkahubDesktopTheme
 import java.awt.FileDialog
 import java.awt.Frame
@@ -90,8 +92,14 @@ private fun DesktopHome(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        val providerCount = (settings.providers as? JsonArray)?.size ?: 0
         Text(
-            text = "Theme: ${settingsStore.settings.themeId}",
+            text = "Theme: ${settings.themeId}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Text(
+            text = "Providers: $providerCount, Models: ${settings.totalModelCount()}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
