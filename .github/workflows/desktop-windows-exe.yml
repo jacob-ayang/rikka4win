@@ -6,6 +6,8 @@ on:
 jobs:
   package-windows-exe:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -18,8 +20,30 @@ jobs:
       - name: Build Windows EXE
         run: ./gradlew :desktop:packageExe --no-daemon
 
+      - name: Resolve version
+        shell: bash
+        run: |
+          version_line=$(grep -E '^rikkahub.version=' gradle.properties | head -n 1)
+          version=${version_line#rikkahub.version=}
+          if [ -z "$version" ]; then
+            echo "Failed to resolve version from gradle.properties"
+            exit 1
+          fi
+          echo "RIKKAHUB_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: List EXE output
+        shell: bash
+        run: ls -la desktop/build/compose/binaries/main/exe
+
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
           name: rikkahub-desktop-exe
           path: desktop/build/compose/binaries/main/exe/**/*.exe
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "desktop-${{ env.RIKKAHUB_VERSION }}"
+          name: "RikkaHub Desktop ${{ env.RIKKAHUB_VERSION }}"
+          files: desktop/build/compose/binaries/main/exe/**/*.exe
