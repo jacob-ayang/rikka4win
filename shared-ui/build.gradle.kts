@@ -40,10 +40,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-}
 
-tasks.withType<KotlinCompile>().configureEach {
-    compilerOptions.optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
-    compilerOptions.optIn.add("androidx.compose.material3.ExperimentalMaterial3ExpressiveApi")
-    compilerOptions.optIn.add("androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi")
+    sourceSets["main"].res.srcDirs("src/androidMain/res")
 }

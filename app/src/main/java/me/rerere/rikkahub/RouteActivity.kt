@@ -93,8 +93,12 @@ import me.rerere.rikkahub.ui.pages.setting.SettingTTSPage
 import me.rerere.rikkahub.ui.pages.share.handler.ShareHandlerPage
 import me.rerere.rikkahub.ui.pages.translator.TranslatorPage
 import me.rerere.rikkahub.ui.pages.webview.WebViewPage
+import me.rerere.rikkahub.ui.hooks.rememberAmoledDarkMode
+import me.rerere.rikkahub.ui.hooks.rememberColorMode
+import me.rerere.rikkahub.ui.hooks.rememberUserSettingsState
 import me.rerere.rikkahub.ui.theme.LocalDarkMode
 import me.rerere.rikkahub.ui.theme.RikkahubTheme
+import me.rerere.rikkahub.ui.theme.ThemeSettings
 import okhttp3.OkHttpClient
 import org.koin.android.ext.android.inject
 import kotlin.reflect.KType
@@ -116,7 +120,16 @@ class RouteActivity : ComponentActivity() {
             val navStack = rememberNavController()
             this.navStack = navStack
             ShareHandler(navStack)
-            RikkahubTheme {
+            val userSettings by rememberUserSettingsState()
+            val colorMode by rememberColorMode()
+            val amoledDarkMode by rememberAmoledDarkMode()
+            val themeSettings = ThemeSettings(
+                themeId = userSettings.themeId,
+                dynamicColor = userSettings.dynamicColor,
+                amoledDarkMode = amoledDarkMode,
+                colorMode = colorMode,
+            )
+            RikkahubTheme(themeSettings) {
                 setSingletonImageLoaderFactory { context ->
                     ImageLoader.Builder(context)
                         .crossfade(true)

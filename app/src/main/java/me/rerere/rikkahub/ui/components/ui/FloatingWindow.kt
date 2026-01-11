@@ -12,7 +12,11 @@ import androidx.compose.ui.platform.LocalContext
 import com.petterp.floatingx.FloatingX
 import com.petterp.floatingx.assist.FxGravity
 import com.petterp.floatingx.listener.control.IFxAppControl
+import me.rerere.rikkahub.ui.hooks.rememberAmoledDarkMode
+import me.rerere.rikkahub.ui.hooks.rememberColorMode
+import me.rerere.rikkahub.ui.hooks.rememberUserSettingsState
 import me.rerere.rikkahub.ui.theme.RikkahubTheme
+import me.rerere.rikkahub.ui.theme.ThemeSettings
 
 @Composable
 fun FloatingWindow(
@@ -40,7 +44,16 @@ fun FloatingWindow(
             setEnableAnimation(true)
             setLayoutView(ComposeView(context).apply {
                 setContent {
-                    RikkahubTheme {
+                    val userSettings by rememberUserSettingsState()
+                    val colorMode by rememberColorMode()
+                    val amoledDarkMode by rememberAmoledDarkMode()
+                    val themeSettings = ThemeSettings(
+                        themeId = userSettings.themeId,
+                        dynamicColor = userSettings.dynamicColor,
+                        amoledDarkMode = amoledDarkMode,
+                        colorMode = colorMode,
+                    )
+                    RikkahubTheme(themeSettings) {
                         content()
                     }
                 }

@@ -88,7 +88,11 @@ import me.rerere.rikkahub.ui.components.ui.BitmapComposer
 import me.rerere.rikkahub.ui.context.LocalNavController
 import me.rerere.rikkahub.ui.context.LocalSettings
 import me.rerere.rikkahub.ui.context.LocalToaster
+import me.rerere.rikkahub.ui.hooks.rememberAmoledDarkMode
+import me.rerere.rikkahub.ui.hooks.rememberColorMode
+import me.rerere.rikkahub.ui.hooks.rememberUserSettingsState
 import me.rerere.rikkahub.ui.theme.RikkahubTheme
+import me.rerere.rikkahub.ui.theme.ThemeSettings
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.exportImage
 import me.rerere.rikkahub.utils.getActivity
@@ -380,7 +384,16 @@ private fun ExportedChatImage(
 ) {
     val navBackStack = rememberNavController()
     val highlighter = koinInject<Highlighter>()
-    RikkahubTheme {
+    val userSettings by rememberUserSettingsState()
+    val colorMode by rememberColorMode()
+    val amoledDarkMode by rememberAmoledDarkMode()
+    val themeSettings = ThemeSettings(
+        themeId = userSettings.themeId,
+        dynamicColor = userSettings.dynamicColor,
+        amoledDarkMode = amoledDarkMode,
+        colorMode = colorMode,
+    )
+    RikkahubTheme(themeSettings) {
         CompositionLocalProvider(
             LocalNavController provides navBackStack,
             LocalHighlighter provides highlighter

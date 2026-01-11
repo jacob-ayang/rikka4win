@@ -4,15 +4,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
-import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.theme.PresetTheme
+import me.rerere.rikkahub.ui.theme.ThemeNameKey
+import me.rerere.rikkahub.ui.theme.themeName
 
 val AutumnThemePreset by lazy {
     PresetTheme(
         id = "autumn",
         name = {
-            Text(stringResource(R.string.theme_name_autumn))
+            Text(themeName(ThemeNameKey.AUTUMN, "Autumn Yellow"))
         },
         standardLight = lightScheme,
         standardDark = darkScheme,
