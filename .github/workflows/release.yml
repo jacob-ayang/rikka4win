@@ -73,17 +73,25 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      - name: Build portable ZIP
+      - name: Build portable directory
         shell: bash
         run: |
           chmod +x gradlew
-          ./gradlew :desktop:packageZip --no-daemon
+          ./gradlew :desktop:createDistributable --no-daemon
+
+      - name: Zip portable directory
+        shell: pwsh
+        run: |
+          $source = "desktop\\build\\compose\\binaries\\main\\app\\*"
+          $dest = "desktop\\build\\compose\\binaries\\main\\RikkaHub-portable.zip"
+          if (Test-Path $dest) { Remove-Item $dest }
+          Compress-Archive -Path $source -DestinationPath $dest
 
       - name: Upload ZIP
         uses: actions/upload-artifact@v4
         with:
           name: portable-zip
-          path: desktop/build/compose/binaries/main/zip/*.zip
+          path: desktop/build/compose/binaries/main/RikkaHub-portable.zip
 
   release:
     needs: [build-desktop]
