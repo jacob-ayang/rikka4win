@@ -1,0 +1,25 @@
+name: Desktop Windows EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package-windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Build Windows EXE
+        run: ./gradlew :desktop:packageExe --no-daemon
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rikkahub-desktop-exe
+          path: desktop/build/compose/binaries/main/exe/**/*.exe

@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-    application
 }
 
 kotlin {
@@ -12,8 +11,15 @@ kotlin {
     }
 }
 
-application {
-    mainClass.set("me.rerere.rikkahub.desktop.MainKt")
+compose.desktop {
+    application {
+        mainClass = "me.rerere.rikkahub.desktop.MainKt"
+        nativeDistributions {
+            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe)
+            packageName = "RikkaHub"
+            packageVersion = "1.0.0"
+        }
+    }
 }
 
 dependencies {
