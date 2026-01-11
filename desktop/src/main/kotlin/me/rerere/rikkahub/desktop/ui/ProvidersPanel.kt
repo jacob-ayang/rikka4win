@@ -14,11 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import me.rerere.rikkahub.desktop.settings.DesktopSettings
-import me.rerere.rikkahub.desktop.settings.providerSummaries
+import me.rerere.rikkahub.desktop.settings.providerDetails
 
 @Composable
 fun ProvidersPanel(settings: DesktopSettings) {
-    val providers = settings.providerSummaries()
+    val providers = settings.providerDetails()
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -47,11 +47,52 @@ fun ProvidersPanel(settings: DesktopSettings) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 items(providers) { provider ->
-                    Text(
-                        text = "${provider.name} · ${provider.modelCount} models",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            Text(
+                                text = "${provider.name} (${provider.type})",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = "Enabled: ${provider.enabled}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            provider.baseUrl?.takeIf { it.isNotBlank() }?.let { baseUrl ->
+                                Text(
+                                    text = "Base URL: $baseUrl",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            if (provider.modelNames.isNotEmpty()) {
+                                val modelsText = buildString {
+                                    append(provider.modelNames.take(5).joinToString())
+                                    if (provider.modelNames.size > 5) append(", ...")
+                                }
+                                Text(
+                                    text = "Models: $modelsText",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            } else {
+                                Text(
+                                    text = "Models: none",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
