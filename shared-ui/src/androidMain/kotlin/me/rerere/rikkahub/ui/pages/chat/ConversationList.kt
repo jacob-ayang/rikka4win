@@ -174,11 +174,12 @@ fun ColumnScope.ConversationList(
 
         items(
             count = conversations.itemCount,
-            key = conversations.itemKey { item ->
-                when (item) {
+            key = { index ->
+                when (val item = conversations[index]) {
                     is ConversationListItem.DateHeader -> "date_${item.date}"
                     is ConversationListItem.PinnedHeader -> "pinned_header"
                     is ConversationListItem.Item -> item.conversation.id.toString()
+                    null -> index
                 }
             }
         ) { index ->

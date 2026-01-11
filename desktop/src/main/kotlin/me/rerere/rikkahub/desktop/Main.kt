@@ -11,9 +11,13 @@ import java.nio.file.StandardOpenOption
 import me.rerere.rikkahub.sharedui.AppRoot
 import me.rerere.rikkahub.ui.theme.ColorMode
 import me.rerere.rikkahub.ui.theme.ThemeSettings
+import org.koin.core.context.startKoin
 
 fun main() {
     initDebugLogger()
+    startKoin {
+        modules(desktopModule)
+    }
     application {
         Window(
             onCloseRequest = ::exitApplication,

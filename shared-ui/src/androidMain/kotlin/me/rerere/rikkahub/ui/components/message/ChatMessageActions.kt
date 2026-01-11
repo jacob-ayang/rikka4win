@@ -84,7 +84,6 @@ fun ColumnScope.ChatMessageActionButtons(
 
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             Lucide.Copy, stringResource(R.string.copy), modifier = Modifier

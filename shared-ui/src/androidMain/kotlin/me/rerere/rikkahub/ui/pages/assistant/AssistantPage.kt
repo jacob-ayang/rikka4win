@@ -205,10 +205,10 @@ fun AssistantPage(vm: AssistantVM = koinViewModel()) {
                                     if (!isFiltering) {
                                         Modifier.longPressDraggableHandle(
                                             onDragStarted = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             },
                                             onDragStopped = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             }
                                         )
                                     } else {
@@ -290,10 +290,10 @@ private fun AssistantTagsFilterRow(
                                 .scale(if (isDragging) 0.95f else 1f)
                                 .longPressDraggableHandle(
                                     onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
                                     onDragStopped = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
                                 )
                         )
@@ -315,7 +315,6 @@ private fun AssistantCreationSheet(
             },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = {},
-            sheetGesturesEnabled = false
         ) {
             Column(
                 modifier = Modifier

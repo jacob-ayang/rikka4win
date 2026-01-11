@@ -426,10 +426,10 @@ private fun ColumnScope.ModelList(
                                 contentDescription = null,
                                 modifier = Modifier.longPressDraggableHandle(
                                     onDragStarted = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     },
                                     onDragStopped = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     }
                                 )
                             )

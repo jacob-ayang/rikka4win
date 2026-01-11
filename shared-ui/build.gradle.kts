@@ -8,6 +8,14 @@ plugins {
 }
 
 kotlin {
+    compilerOptions {
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
+        optIn.add("androidx.compose.animation.ExperimentalSharedTransitionApi")
+        optIn.add("androidx.compose.foundation.ExperimentalFoundationApi")
+        optIn.add("androidx.compose.foundation.layout.ExperimentalLayoutApi")
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
     androidTarget()
     jvm("desktop")
 
@@ -88,9 +96,6 @@ kotlin {
                 implementation(libs.reorderable)
                 implementation(libs.lucide.icons)
                 implementation(libs.image.viewer)
-                implementation(libs.jlatexmath)
-                implementation(libs.jlatexmath.font.greek)
-                implementation(libs.jlatexmath.font.cyrillic)
                 implementation(libs.modelcontextprotocol.kotlin.sdk)
 
                 implementation(project(":ai"))
@@ -105,7 +110,53 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(project(":shared-desktop"))
+                implementation("io.insert-koin:koin-compose")
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.androidx.navigation2)
+                implementation(libs.jetbrains.markdown)
+                implementation(libs.reorderable)
+                implementation(libs.lucide.icons)
+                implementation(libs.sonner)
+                implementation(libs.image.viewer)
+                implementation(libs.jsoup)
+                implementation(libs.kotlinx.datetime)
+                implementation(libs.okhttp)
+                implementation(kotlin("reflect"))
             }
+            kotlin.srcDir("src/androidMain/kotlin")
+            kotlin.exclude(
+                "**/*.android.kt",
+                "**/ui/activity/**",
+                "**/ui/components/webview/**",
+                "**/ui/pages/webview/**",
+                "**/ui/components/ui/permission/**",
+                "**/ui/components/ui/QRCode.kt",
+                "**/ui/components/ui/BitmapComposer.kt",
+                "**/ui/components/ui/Emoji.kt",
+                "**/ui/components/ui/FloatingWindow.kt",
+                "**/ui/components/ui/ImagePreviewDialog.kt",
+                "**/ui/components/ui/LoadingBlock.kt",
+                "**/ui/components/ui/TextArea.kt",
+                "**/ui/components/ui/Tooltip.kt",
+                "**/ui/components/ui/UIAvatar.kt",
+                "**/ui/components/ui/UpdateCard.kt",
+                "**/ui/components/ui/ViewText.kt",
+                "**/ui/components/richtext/LatexText.kt",
+                "**/ui/components/richtext/Mermaid.kt",
+                "**/ui/components/richtext/MarkdownWeb.kt",
+                "**/ui/components/richtext/ZoomableAsyncImage.kt",
+                "**/ui/pages/chat/Export.kt",
+                "**/ui/pages/assistant/detail/AssistantImporter.kt",
+                "**/ui/components/ai/ChatInput.kt",
+                "**/ui/hooks/AvatarShape.kt",
+                "**/ui/hooks/HeroAnimation.kt",
+                "**/ui/hooks/Lifecycle.kt",
+                "**/ui/hooks/PlayStore.kt",
+                "**/ui/hooks/TTS.kt",
+            )
+            resources.srcDirs("src/androidMain/res", "../app/src/main/res")
         }
     }
 }
@@ -130,4 +181,5 @@ dependencies {
     add("androidMainImplementation", platform(libs.androidx.compose.bom))
     add("androidMainImplementation", platform(libs.firebase.bom))
     add("androidMainImplementation", platform(libs.koin.bom))
+    add("desktopMainImplementation", platform(libs.koin.bom))
 }

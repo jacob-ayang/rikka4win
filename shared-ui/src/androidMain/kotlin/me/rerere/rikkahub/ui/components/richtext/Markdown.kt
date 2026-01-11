@@ -633,7 +633,6 @@ private fun ListItemNode(
                 )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    itemVerticalAlignment = Alignment.CenterVertically,
                 ) {
                     directContent.fastForEach { contentChild ->
                         MarkdownNode(

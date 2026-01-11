@@ -233,9 +233,10 @@ internal fun AssistantBasicContent(
                     )
                 }
             ) {
-                if (assistant.temperature != null) {
+                val temperature = assistant.temperature
+                if (temperature != null) {
                     Slider(
-                        value = assistant.temperature,
+                        value = temperature,
                         onValueChange = {
                             onUpdate(
                                 assistant.copy(
@@ -252,7 +253,7 @@ internal fun AssistantBasicContent(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        val currentTemperature = assistant.temperature
+                        val currentTemperature = temperature
                         val tagType = when (currentTemperature) {
                             in 0.0f..0.3f -> TagType.INFO
                             in 0.3f..1.0f -> TagType.SUCCESS
@@ -438,8 +439,9 @@ internal fun AssistantBasicContent(
                         Text(stringResource(R.string.assistant_page_max_tokens_no_limit))
                     },
                     supportingText = {
-                        if (assistant.maxTokens != null) {
-                            Text(stringResource(R.string.assistant_page_max_tokens_limit, assistant.maxTokens))
+                        val maxTokens = assistant.maxTokens
+                        if (maxTokens != null) {
+                            Text(stringResource(R.string.assistant_page_max_tokens_limit, maxTokens))
                         } else {
                             Text(stringResource(R.string.assistant_page_max_tokens_no_token_limit))
                         }

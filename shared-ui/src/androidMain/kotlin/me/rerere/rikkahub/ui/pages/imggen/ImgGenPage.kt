@@ -393,8 +393,8 @@ private fun ImageGalleryScreen(
             ) {
                 items(
                     count = generatedImages.itemCount,
-                    key = generatedImages.itemKey { it.id },
-                    contentType = generatedImages.itemContentType { "GeneratedImage" }
+                    key = { index -> generatedImages[index]?.id ?: index },
+                    contentType = { "GeneratedImage" }
                 ) { index ->
                     val image = generatedImages[index]
                     image?.let {

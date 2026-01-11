@@ -26,4 +26,7 @@ compose.desktop {
 dependencies {
     implementation(project(":shared-ui"))
     implementation(compose.desktop.currentOs)
+    implementation(platform(libs.koin.bom))
+    implementation("io.insert-koin:koin-core")
+    implementation("io.insert-koin:koin-compose")
 }

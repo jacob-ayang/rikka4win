@@ -44,7 +44,6 @@ fun ChatMessageCopySheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        sheetGesturesEnabled = false,
         dragHandle = null,
     ) {
         Column(

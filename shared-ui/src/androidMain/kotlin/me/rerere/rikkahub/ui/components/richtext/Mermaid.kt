@@ -190,7 +190,6 @@ fun Mermaid(
                 preview = false
             },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            sheetGesturesEnabled = false,
             dragHandle = {}
         ) {
             Column(

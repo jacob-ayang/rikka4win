@@ -43,7 +43,6 @@ fun ChatMessageNerdLine(
         CompositionLocalProvider(LocalContentColor provides color) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                itemVerticalAlignment = Alignment.CenterVertically,
                 modifier = modifier.padding(horizontal = 4.dp),
             ) {
                 val usage = message.usage

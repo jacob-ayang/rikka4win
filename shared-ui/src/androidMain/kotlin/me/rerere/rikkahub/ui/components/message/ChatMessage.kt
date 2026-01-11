@@ -292,7 +292,7 @@ private fun MessagePartsBlock(
             .debounce(50.milliseconds)
             .collect { parts ->
                 if (parts.isNotEmpty() && loading && settings.displaySetting.enableMessageGenerationHapticEffect) {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.KeyboardTap)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
             }
     }

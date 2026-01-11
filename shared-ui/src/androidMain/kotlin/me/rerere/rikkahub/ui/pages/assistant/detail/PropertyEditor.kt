@@ -32,6 +32,7 @@ import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Trash
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import me.rerere.ai.provider.CustomBody
 import me.rerere.ai.provider.CustomHeader
@@ -138,7 +139,7 @@ fun CustomBodies(customBodies: List<CustomBody>, onUpdate: (List<CustomBody>) ->
         customBodies.forEachIndexed { index, body ->
             var bodyKey by remember(body.key) { mutableStateOf(body.key) }
             var bodyValueString by remember(body.value) {
-                mutableStateOf(jsonLenient.encodeToString(JsonElement.serializer(), body.value))
+                mutableStateOf(jsonLenient.encodeToString(JsonElement.serializer(), body.value ?: JsonNull))
             }
             var jsonParseError by remember { mutableStateOf<String?>(null) }
 

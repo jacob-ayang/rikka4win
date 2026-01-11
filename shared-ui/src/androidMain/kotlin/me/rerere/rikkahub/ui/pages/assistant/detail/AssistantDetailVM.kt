@@ -167,8 +167,9 @@ class AssistantDetailVM(
     }
 
     fun checkAvatarDelete(old: Assistant, new: Assistant) {
-        if (old.avatar is Avatar.Image && old.avatar != new.avatar) {
-            context.deleteChatFiles(listOf(old.avatar.url.toUri()))
+        val oldAvatar = old.avatar
+        if (oldAvatar is Avatar.Image && oldAvatar != new.avatar) {
+            context.deleteChatFiles(listOf(oldAvatar.url.toUri()))
         }
     }
 

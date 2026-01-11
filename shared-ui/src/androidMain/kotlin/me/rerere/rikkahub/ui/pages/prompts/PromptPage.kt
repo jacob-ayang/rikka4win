@@ -393,7 +393,6 @@ private fun ModeInjectionEditSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        sheetGesturesEnabled = false,
         dragHandle = {
             IconButton(onClick = {
                 scope.launch {
@@ -781,7 +780,6 @@ private fun LorebookEditSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        sheetGesturesEnabled = false,
         dragHandle = {
             IconButton(onClick = {
                 scope.launch {

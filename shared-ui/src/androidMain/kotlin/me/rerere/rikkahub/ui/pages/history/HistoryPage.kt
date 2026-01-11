@@ -45,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -241,10 +242,12 @@ private fun SwipeableConversationItem(
     onTogglePin: () -> Unit = {},
     onClick: () -> Unit = {},
 ) {
-    val positionThreshold = SwipeToDismissBoxDefaults.positionalThreshold
-    val dismissState = remember {
+    val positionThreshold: (Float) -> Float = { distance -> distance / 2f }
+    val density = LocalDensity.current
+    val dismissState = remember(density) {
         SwipeToDismissBoxState(
             initialValue = SwipeToDismissBoxValue.Settled,
+            density = density,
             positionalThreshold = positionThreshold,
         )
     }

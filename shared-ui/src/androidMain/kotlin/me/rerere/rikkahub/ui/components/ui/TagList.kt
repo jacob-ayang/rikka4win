@@ -53,7 +53,6 @@ fun TagsInput(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        itemVerticalAlignment = Alignment.CenterVertically
     ) {
         // 显示已选择的tags
         selectedTags.fastForEach { tag ->
