@@ -1,6 +1,7 @@
 package android.content
 
 import java.io.File
+import android.os.BatteryManager
 
 open class Context(
     private val baseDir: File = File(System.getProperty("user.home"), ".rikkahub")
@@ -24,6 +25,13 @@ open class Context(
 
     open fun getApplicationContext(): Context = this
 
+    open fun getSystemService(name: String): Any? {
+        return when (name) {
+            BATTERY_SERVICE -> BatteryManager()
+            else -> null
+        }
+    }
+
     fun getSharedPreferences(name: String, mode: Int): SharedPreferences {
         return FileBackedSharedPreferences(File(prefsDir, "$name.json"))
     }
@@ -34,5 +42,6 @@ open class Context(
 
     companion object {
         const val MODE_PRIVATE = 0
+        const val BATTERY_SERVICE = "battery"
     }
 }

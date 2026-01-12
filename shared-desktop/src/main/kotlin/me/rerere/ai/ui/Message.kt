@@ -34,6 +34,15 @@ data class UIMessage(
         }
     }
 
+    fun summaryAsText(): String {
+        return "[${role.name}]: " + parts.joinToString(separator = "\n") { part ->
+            when (part) {
+                is UIMessagePart.Text -> part.text
+                else -> ""
+            }
+        }
+    }
+
     fun getToolCalls() = parts.filterIsInstance<UIMessagePart.ToolCall>()
 
     fun getToolResults() = parts.filterIsInstance<UIMessagePart.ToolResult>()
@@ -171,4 +180,21 @@ fun List<UIMessagePart>.isEmptyInputMessage(): Boolean {
     return all { part ->
         part is UIMessagePart.Reasoning
     }
+}
+
+fun List<UIMessage>.truncate(index: Int): List<UIMessage> {
+    if (index < 0 || index > lastIndex) return this
+    return subList(index, size)
+}
+
+fun UIMessage.finishReasoning(): UIMessage {
+    return copy(
+        parts = parts.map { part ->
+            if (part is UIMessagePart.Reasoning && part.finishedAt == null) {
+                part.copy(finishedAt = Clock.System.now())
+            } else {
+                part
+            }
+        }
+    )
 }

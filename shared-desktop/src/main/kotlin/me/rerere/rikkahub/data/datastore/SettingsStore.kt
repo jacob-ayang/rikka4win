@@ -37,6 +37,7 @@ class SettingsStore(
 
     private val _settingsFlow = MutableStateFlow(loadSettings())
     val settingsFlow: StateFlow<Settings> = _settingsFlow
+    val settingsFlowRaw: StateFlow<Settings> = _settingsFlow
 
     suspend fun update(settings: Settings) {
         if (settings.init) {

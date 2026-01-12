@@ -8,7 +8,9 @@ class Intent(
 ) {
     var type: String? = null
     private val extras = mutableMapOf<String, Any?>()
-    private var flags: Int = 0
+    var flags: Int = 0
+
+    constructor(context: Context, clazz: Class<*>) : this(action = null, data = null)
 
     fun putExtra(name: String, value: String?): Intent {
         extras[name] = value
@@ -32,6 +34,8 @@ class Intent(
         const val EXTRA_STREAM = "android.intent.extra.STREAM"
         const val EXTRA_PROCESS_TEXT = "android.intent.extra.PROCESS_TEXT"
         const val FLAG_GRANT_READ_URI_PERMISSION = 0x00000001
+        const val FLAG_ACTIVITY_CLEAR_TOP = 0x04000000
+        const val FLAG_ACTIVITY_SINGLE_TOP = 0x20000000
 
         fun createChooser(intent: Intent, title: CharSequence?): Intent = intent
     }

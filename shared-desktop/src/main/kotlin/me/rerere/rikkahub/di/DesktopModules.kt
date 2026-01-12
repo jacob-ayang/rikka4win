@@ -7,6 +7,9 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import me.rerere.highlight.Highlighter
+import me.rerere.rikkahub.data.ai.transformers.AssistantTemplateLoader
+import me.rerere.rikkahub.data.ai.transformers.TemplateTransformer
+import me.rerere.rikkahub.data.ai.tools.LocalTools
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.ai.mcp.McpManager
 import me.rerere.rikkahub.data.ai.GenerationHandler
@@ -21,8 +24,10 @@ import me.rerere.rikkahub.data.sync.WebdavSync
 import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.UpdateChecker
+import io.pebbletemplates.pebble.PebbleEngine
 import org.koin.dsl.module
 import java.util.concurrent.TimeUnit
+import java.util.Locale
 
 val desktopCoreModule = module {
     single<Json> { JsonInstant }
@@ -40,6 +45,16 @@ val desktopCoreModule = module {
     single { FirebaseAnalytics() }
     single { AILoggingManager() }
     single { SponsorAPI.create() }
+    single { LocalTools() }
+    single { AssistantTemplateLoader(settingsStore = get()) }
+    single {
+        PebbleEngine.Builder()
+            .loader(get<AssistantTemplateLoader>())
+            .defaultLocale(Locale.getDefault())
+            .autoEscaping(false)
+            .build()
+    }
+    single { TemplateTransformer(engine = get(), settingsStore = get()) }
     single { WebdavSync(settingsStore = get(), json = get(), context = get()) }
     single<HttpClient> {
         HttpClient(OkHttp) {
@@ -63,6 +78,10 @@ val desktopCoreModule = module {
             settingsStore = get(),
             conversationRepo = get(),
             memoryRepository = get(),
+            generationHandler = get(),
+            templateTransformer = get(),
+            providerManager = get(),
+            localTools = get(),
             mcpManager = get(),
         )
     }

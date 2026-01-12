@@ -17,9 +17,72 @@ interface MessageTransformer {
     suspend fun transform(
         ctx: TransformerContext,
         messages: List<UIMessage>,
-    ): List<UIMessage> = messages
+    ): List<UIMessage> {
+        return messages
+    }
 }
 
 interface InputMessageTransformer : MessageTransformer
 
-interface OutputMessageTransformer : MessageTransformer
+interface OutputMessageTransformer : MessageTransformer {
+    suspend fun visualTransform(
+        ctx: TransformerContext,
+        messages: List<UIMessage>,
+    ): List<UIMessage> {
+        return messages
+    }
+
+    suspend fun onGenerationFinish(
+        ctx: TransformerContext,
+        messages: List<UIMessage>,
+    ): List<UIMessage> {
+        return messages
+    }
+}
+
+suspend fun List<UIMessage>.transforms(
+    transformers: List<MessageTransformer>,
+    context: Context,
+    model: Model,
+    assistant: Assistant,
+    settings: Settings,
+): List<UIMessage> {
+    val ctx = TransformerContext(context, model, assistant, settings)
+    return transformers.fold(this) { acc, transformer ->
+        transformer.transform(ctx, acc)
+    }
+}
+
+suspend fun List<UIMessage>.visualTransforms(
+    transformers: List<MessageTransformer>,
+    context: Context,
+    model: Model,
+    assistant: Assistant,
+    settings: Settings,
+): List<UIMessage> {
+    val ctx = TransformerContext(context, model, assistant, settings)
+    return transformers.fold(this) { acc, transformer ->
+        if (transformer is OutputMessageTransformer) {
+            transformer.visualTransform(ctx, acc)
+        } else {
+            acc
+        }
+    }
+}
+
+suspend fun List<UIMessage>.onGenerationFinish(
+    transformers: List<MessageTransformer>,
+    context: Context,
+    model: Model,
+    assistant: Assistant,
+    settings: Settings,
+): List<UIMessage> {
+    val ctx = TransformerContext(context, model, assistant, settings)
+    return transformers.fold(this) { acc, transformer ->
+        if (transformer is OutputMessageTransformer) {
+            transformer.onGenerationFinish(ctx, acc)
+        } else {
+            acc
+        }
+    }
+}

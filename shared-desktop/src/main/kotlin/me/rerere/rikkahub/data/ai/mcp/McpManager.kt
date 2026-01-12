@@ -3,6 +3,9 @@ package me.rerere.rikkahub.data.ai.mcp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlin.uuid.Uuid
 
 sealed class McpStatus {
@@ -20,6 +23,12 @@ class McpManager {
     }
 
     fun getClient(config: McpServerConfig): Any? = null
+
+    fun getAllAvailableTools(): List<McpTool> = emptyList()
+
+    fun callTool(toolName: String, args: JsonObject): JsonElement {
+        return JsonPrimitive("Tool call not supported on desktop")
+    }
 
     fun syncAll() = Unit
 }
