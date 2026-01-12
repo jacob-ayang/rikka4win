@@ -111,6 +111,8 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(project(":shared-desktop"))
+                implementation(project(":ai-desktop"))
+                implementation(project(":search-desktop"))
                 implementation("io.insert-koin:koin-compose")
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.serialization.json)
@@ -119,8 +121,8 @@ kotlin {
                 implementation(libs.reorderable)
                 implementation(libs.lucide.icons)
                 implementation(libs.sonner)
-                implementation(libs.image.viewer)
                 implementation(libs.jsoup)
+                implementation(libs.modelcontextprotocol.kotlin.sdk)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.okhttp)
                 implementation(kotlin("reflect"))

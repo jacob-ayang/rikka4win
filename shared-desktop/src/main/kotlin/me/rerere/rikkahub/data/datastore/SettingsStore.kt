@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.Serializable
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ProviderSetting
-import me.rerere.ai.provider.copyProvider
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.ai.mcp.McpServerConfig
 import me.rerere.rikkahub.data.ai.prompts.DEFAULT_OCR_PROMPT
@@ -44,8 +43,9 @@ class SettingsStore(
             Log.w(TAG, "Cannot update dummy settings")
             return
         }
-        _settingsFlow.value = settings
-        persist(settings)
+        val normalized = settings.ensureDefaults()
+        _settingsFlow.value = normalized
+        persist(normalized)
     }
 
     suspend fun update(fn: (Settings) -> Settings) {
@@ -255,12 +255,64 @@ private val DEFAULT_TTS_PROVIDERS = listOf(
 val DEFAULT_ASSISTANTS_IDS = DEFAULT_ASSISTANTS.map { it.id }
 
 private fun Settings.ensureDefaults(): Settings {
-    val providers = if (this.providers.isEmpty()) DEFAULT_PROVIDERS else this.providers
+    var providers = if (this.providers.isEmpty()) DEFAULT_PROVIDERS else this.providers
+    DEFAULT_PROVIDERS.forEach { defaultProvider ->
+        if (providers.none { it.id == defaultProvider.id }) {
+            providers = providers + defaultProvider.copyProvider()
+        }
+    }
+    val normalizedProviders = providers
+        .map { provider ->
+            val providerWithModels = when (provider) {
+                is ProviderSetting.OpenAI -> provider.copy(models = provider.models.distinctBy { it.id })
+                is ProviderSetting.Google -> provider.copy(models = provider.models.distinctBy { it.id })
+                is ProviderSetting.Claude -> provider.copy(models = provider.models.distinctBy { it.id })
+            }
+            val defaultProvider = DEFAULT_PROVIDERS.find { it.id == provider.id }
+            if (defaultProvider != null) {
+                providerWithModels.copyProvider(
+                    builtIn = defaultProvider.builtIn,
+                    description = defaultProvider.description,
+                    shortDescription = defaultProvider.shortDescription
+                )
+            } else {
+                providerWithModels
+            }
+        }
+        .distinctBy { it.id }
+
     val assistants = if (this.assistants.isEmpty()) DEFAULT_ASSISTANTS else this.assistants
+    val assistantList = assistants.toMutableList()
+    DEFAULT_ASSISTANTS.forEach { defaultAssistant ->
+        if (assistantList.none { it.id == defaultAssistant.id }) {
+            assistantList.add(defaultAssistant.copy())
+        }
+    }
+    val validMcpServerIds = mcpServers.map { it.id }.toSet()
+    val validModeInjectionIds = modeInjections.map { it.id }.toSet()
+    val validLorebookIds = lorebooks.map { it.id }.toSet()
+    val normalizedAssistants = assistantList
+        .distinctBy { it.id }
+        .map { assistant ->
+            assistant.copy(
+                mcpServers = assistant.mcpServers.filter { it in validMcpServerIds }.toSet(),
+                modeInjectionIds = assistant.modeInjectionIds.filter { it in validModeInjectionIds }.toSet(),
+                lorebookIds = assistant.lorebookIds.filter { it in validLorebookIds }.toSet(),
+            )
+        }
+
     val ttsProviders = if (this.ttsProviders.isEmpty()) DEFAULT_TTS_PROVIDERS else this.ttsProviders
+    val ttsList = ttsProviders.toMutableList()
+    DEFAULT_TTS_PROVIDERS.forEach { defaultTts ->
+        if (ttsList.none { it.id == defaultTts.id }) {
+            ttsList.add(defaultTts.copyProvider())
+        }
+    }
+    val normalizedTts = ttsList.distinctBy { it.id }
+
     return copy(
-        providers = providers,
-        assistants = assistants,
-        ttsProviders = ttsProviders
+        providers = normalizedProviders,
+        assistants = normalizedAssistants,
+        ttsProviders = normalizedTts
     )
 }

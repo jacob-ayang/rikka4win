@@ -15,6 +15,8 @@ dependencies {
     implementation(platform(libs.koin.bom))
     implementation("io.insert-koin:koin-core")
     implementation("org.jetbrains.compose.runtime:runtime:1.7.3")
+    implementation(project(":ai-desktop"))
+    implementation(project(":search-desktop"))
     implementation(libs.okhttp)
     implementation(libs.okhttp.sse)
     implementation(libs.retrofit)
@@ -31,5 +33,6 @@ dependencies {
     implementation(libs.dav4jvm)
     implementation("net.sf.kxml:kxml2:2.3.0")
     implementation(libs.modelcontextprotocol.kotlin.sdk)
+    implementation(libs.sqlite.jdbc)
     implementation(kotlin("reflect"))
 }

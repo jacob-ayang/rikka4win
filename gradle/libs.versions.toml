@@ -44,6 +44,7 @@ jsoup = "1.21.2"
 zxing = "3.5.4"
 quickie-bundled = "1.11.0"
 sonner = "0.4.0"
+sqlite-jdbc = "3.45.2.0"
 leakcanary = "2.14"
 workmanager = "2.11.0"
 reorderable = "3.0.0"
@@ -130,6 +131,7 @@ jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 quickie-bundled = { group = "io.github.g00fy2.quickie", name = "quickie-bundled", version.ref = "quickie-bundled" }
 sonner = { module = "io.github.brdominguez:compose-sonner", version.ref = "sonner" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
