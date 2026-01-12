@@ -1,37 +1,65 @@
 package me.rerere.rikkahub.utils
 
-fun Number.toFixed(digits: Int = 0) = "%.${digits}f".format(this)
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.math.abs
 
-fun Float.toFixed(digits: Int = 0) = "%.${digits}f".format(this)
-
-fun Double.toFixed(digits: Int = 0) = "%.${digits}f".format(this)
-
-fun String.stripMarkdown(): String {
-    return this
-        .replace(Regex("```[\\s\\S]*?```|`[^`]*?`"), "")
-        .replace(Regex("!?\\[([^\\]]+)\\]\\([^\\)]*\\)"), "$1")
-        .replace(Regex("\\*\\*([^*]+?)\\*\\*"), "$1")
-        .replace(Regex("\\*([^*]+?)\\*"), "$1")
-        .replace(Regex("__([^_]+?)__"), "$1")
-        .replace(Regex("_([^_]+?)_"), "$1")
-        .replace(Regex("~~([^~]+?)~~"), "$1")
-        .replace(Regex("(?m)^#+\\s*"), "")
-        .replace(Regex("(?m)^\\s*[-*+]\\s+"), "")
-        .replace(Regex("(?m)^\\s*\\d+\\.\\s+"), "")
-        .replace(Regex("(?m)^>\\s*"), "")
-        .replace(Regex("(?m)^(\\s*[-*_]){3,}\\s*$"), "")
-        .replace(Regex("\n{3,}"), "\n\n")
-        .trim()
+@OptIn(ExperimentalEncodingApi::class)
+fun String.base64Encode(): String {
+    return Base64.encode(toByteArray())
 }
 
-fun String.extractGeminiThinkingTitle(): String? {
-    val lines = this.lines()
-    for (i in lines.indices.reversed()) {
-        val line = lines[i].trim()
-        val match = Regex("^\\*\\*(.+?)\\*\\*$").find(line)
-        if (match != null) {
-            return match.groupValues[1].trim()
+@OptIn(ExperimentalEncodingApi::class)
+fun String.base64Decode(): String {
+    return runCatching { String(Base64.decode(this)) }.getOrDefault(this)
+}
+
+fun String.urlDecode(): String {
+    return runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8) }.getOrDefault(this)
+}
+
+fun Int.formatNumber(): String {
+    val absValue = abs(this)
+    val sign = if (this < 0) "-" else ""
+
+    return when {
+        absValue < 1000 -> toString()
+        absValue < 1_000_000 -> {
+            val value = absValue / 1000.0
+            if (value == value.toInt().toDouble()) {
+                "$sign${value.toInt()}K"
+            } else {
+                "$sign${value.toFixed(1)}K"
+            }
+        }
+        absValue < 1_000_000_000 -> {
+            val value = absValue / 1_000_000.0
+            if (value == value.toInt().toDouble()) {
+                "$sign${value.toInt()}M"
+            } else {
+                "$sign${value.toFixed(1)}M"
+            }
+        }
+        else -> {
+            val value = absValue / 1_000_000_000.0
+            if (value == value.toInt().toDouble()) {
+                "$sign${value.toInt()}B"
+            } else {
+                "$sign${value.toFixed(1)}B"
+            }
         }
     }
-    return null
 }
+
+fun Long.fileSizeToString(): String {
+    return when {
+        this < 1024 -> "$this B"
+        this < 1024 * 1024 -> "${this / 1024} KB"
+        this < 1024 * 1024 * 1024 -> "${this / (1024 * 1024)} MB"
+        else -> "${this / (1024 * 1024 * 1024)} GB"
+    }
+}
+
+fun Number.toFixed(digits: Int = 0) = "%.${digits}f".format(this)

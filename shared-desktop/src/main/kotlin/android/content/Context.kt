@@ -13,7 +13,7 @@ open class Context(
 
     open fun getDatabasePath(name: String): File {
         val dbDir = File(baseDir, "databases").apply { mkdirs() }
-        return File(dbDir, "$name.db")
+        return File(dbDir, name)
     }
 
     open fun getString(id: Int): String = "string:$id"

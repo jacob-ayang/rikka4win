@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.pebble)
     implementation(libs.commons.text)
     implementation(libs.dav4jvm)
+    implementation("net.sf.kxml:kxml2:2.3.0")
     implementation(libs.modelcontextprotocol.kotlin.sdk)
     implementation(kotlin("reflect"))
 }

@@ -30,7 +30,7 @@ val desktopModule = module {
         )
     }
     factory { SettingVM(settingsStore = get(), mcpManager = get()) }
-    factory { DebugVM(settingsStore = get()) }
+    factory { DebugVM(settingsStore = get(), conversationRepository = get()) }
     factory { HistoryVM(settingsStore = get(), conversationRepo = get()) }
     factory { AssistantVM(settingsStore = get(), memoryRepository = get(), conversationRepo = get()) }
     factory { (id: String) ->
@@ -41,7 +41,7 @@ val desktopModule = module {
             context = get(),
         )
     }
-    factory { TranslatorVM(settingsStore = get()) }
+    factory { TranslatorVM(settingsStore = get(), generationHandler = get()) }
     factory { (text: String) ->
         ShareHandlerVM(
             text = text,
@@ -50,6 +50,6 @@ val desktopModule = module {
     }
     factory { BackupVM(settingsStore = get(), webdavSync = get(), s3Sync = get()) }
     factory { ImgGenVM(context = get(), settingsStore = get(), genMediaRepository = get(), providerManager = get()) }
-    factory { DeveloperVM() }
+    factory { DeveloperVM(aiLoggingManager = get()) }
     factory { PromptVM(settingsStore = get()) }
 }

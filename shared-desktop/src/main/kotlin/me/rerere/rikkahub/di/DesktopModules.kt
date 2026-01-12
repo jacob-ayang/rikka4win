@@ -4,6 +4,8 @@ import android.app.Application
 import kotlinx.serialization.json.Json
 import me.rerere.ai.provider.ProviderManager
 import com.google.firebase.analytics.FirebaseAnalytics
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import me.rerere.highlight.Highlighter
 import me.rerere.rikkahub.AppScope
 import me.rerere.rikkahub.data.ai.mcp.McpManager
@@ -20,6 +22,7 @@ import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.utils.JsonInstant
 import me.rerere.rikkahub.utils.UpdateChecker
 import org.koin.dsl.module
+import java.util.concurrent.TimeUnit
 
 val desktopCoreModule = module {
     single<Json> { JsonInstant }
@@ -38,7 +41,21 @@ val desktopCoreModule = module {
     single { AILoggingManager() }
     single { SponsorAPI.create() }
     single { WebdavSync(settingsStore = get(), json = get(), context = get()) }
-    single { S3Sync(settingsStore = get(), json = get(), context = get()) }
+    single<HttpClient> {
+        HttpClient(OkHttp) {
+            engine {
+                config {
+                    connectTimeout(20, TimeUnit.SECONDS)
+                    readTimeout(10, TimeUnit.MINUTES)
+                    writeTimeout(120, TimeUnit.SECONDS)
+                    followSslRedirects(true)
+                    followRedirects(true)
+                    retryOnConnectionFailure(true)
+                }
+            }
+        }
+    }
+    single { S3Sync(settingsStore = get(), json = get(), context = get(), httpClient = get()) }
     single {
         ChatService(
             context = get(),

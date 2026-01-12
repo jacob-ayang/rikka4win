@@ -17,3 +17,16 @@ fun String.stripMarkdown(): String {
         .replace(Regex("\n{3,}"), "\n\n")
         .trim()
 }
+
+fun String.extractGeminiThinkingTitle(): String? {
+    val lines = this.lines()
+    for (i in lines.indices.reversed()) {
+        val line = lines[i].trim()
+        val boldPattern = Regex("^\\*\\*(.+?)\\*\\*$")
+        val match = boldPattern.find(line)
+        if (match != null) {
+            return match.groupValues[1].trim()
+        }
+    }
+    return null
+}

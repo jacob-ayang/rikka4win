@@ -262,21 +262,19 @@ fun ChatMessageReasoning(
 
 @Composable
 private fun GeminiReasoningTitle(reasoning: UIMessagePart.Reasoning) {
-    val title = reasoning.reasoning.extractGeminiThinkingTitle()
-    if (title != null) {
-        AnimatedContent(
-            targetState = title,
-            transitionSpec = {
-                (slideInVertically { height -> height } + fadeIn()).togetherWith(slideOutVertically { height -> -height } + fadeOut())
-            }
-        ) {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(horizontal = 4.dp)
-                    .shimmer(true),
-            )
+    val title = reasoning.reasoning.extractGeminiThinkingTitle() ?: return
+    AnimatedContent(
+        targetState = title,
+        transitionSpec = {
+            (slideInVertically { height -> height } + fadeIn()).togetherWith(slideOutVertically { height -> -height } + fadeOut())
         }
+    ) { currentTitle ->
+        Text(
+            text = currentTitle,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier
+                .padding(horizontal = 4.dp)
+                .shimmer(true),
+        )
     }
 }
