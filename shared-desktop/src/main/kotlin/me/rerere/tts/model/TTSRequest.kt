@@ -1,8 +1,18 @@
 package me.rerere.tts.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class TTSRequest(
-    val text: String,
-    val speed: Float = 1.0f,
+    val text: String
 )
 
-data class AudioChunk(val data: ByteArray)
+@Serializable
+enum class AudioFormat {
+    MP3,
+    WAV,
+    OGG,
+    AAC,
+    OPUS,
+    PCM
+}

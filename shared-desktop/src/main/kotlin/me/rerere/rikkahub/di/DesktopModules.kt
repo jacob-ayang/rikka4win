@@ -54,6 +54,7 @@ val desktopCoreModule = module {
             aiLoggingManager = get(),
         )
     }
+    single { me.rerere.tts.provider.TTSManager(get()) }
     single<OkHttpClient> {
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)

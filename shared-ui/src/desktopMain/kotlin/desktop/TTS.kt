@@ -1,10 +1,53 @@
 package me.rerere.rikkahub.ui.hooks
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.StateFlow
+import me.rerere.rikkahub.data.datastore.SettingsStore
+import me.rerere.rikkahub.data.datastore.getSelectedTTSProvider
+import me.rerere.rikkahub.utils.stripMarkdown
 import me.rerere.tts.model.PlaybackState
+import me.rerere.tts.provider.TTSManager
+import me.rerere.tts.provider.TTSProviderSetting
+import me.rerere.tts.controller.TtsController
+import org.koin.compose.koinInject
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
+private const val TAG = "TTS"
+
+@Composable
+fun rememberCustomTtsState(): CustomTtsState {
+    val context = LocalContext.current
+    val settingsStore = koinInject<SettingsStore>()
+    val settings by settingsStore.settingsFlow.collectAsState()
+
+    val ttsState = remember {
+        CustomTtsStateImpl(
+            context = context.getApplicationContext(),
+            settingsStore = settingsStore
+        )
+    }
+
+    DisposableEffect(settings.selectedTTSProviderId, settings.ttsProviders) {
+        ttsState.updateProvider(settings.getSelectedTTSProvider())
+        onDispose { }
+    }
+
+    DisposableEffect(ttsState) {
+        onDispose {
+            ttsState.cleanup()
+        }
+    }
+
+    return ttsState
+}
 
 interface CustomTtsState {
     val isAvailable: StateFlow<Boolean>
@@ -24,25 +67,57 @@ interface CustomTtsState {
     fun cleanup()
 }
 
-private class StubTtsState : CustomTtsState {
-    override val isAvailable = MutableStateFlow(false)
-    override val isSpeaking = MutableStateFlow(false)
-    override val error = MutableStateFlow<String?>(null)
-    override val currentChunk = MutableStateFlow(0)
-    override val totalChunks = MutableStateFlow(0)
-    override val playbackState = MutableStateFlow(PlaybackState())
+private class CustomTtsStateImpl(
+    private val context: Context,
+    private val settingsStore: SettingsStore
+) : CustomTtsState, KoinComponent {
 
-    override fun speak(text: String, flushCalled: Boolean) = Unit
-    override fun stop() = Unit
-    override fun pause() = Unit
-    override fun resume() = Unit
-    override fun skipNext() = Unit
-    override fun fastForward(ms: Long) = Unit
-    override fun setSpeed(speed: Float) = Unit
-    override fun cleanup() = Unit
-}
+    private val ttsManager by inject<TTSManager>()
+    private val controller by lazy { TtsController(context, ttsManager) }
 
-@Composable
-fun rememberCustomTtsState(): CustomTtsState {
-    return remember { StubTtsState() }
+    override val isAvailable: StateFlow<Boolean> get() = controller.isAvailable
+    override val isSpeaking: StateFlow<Boolean> get() = controller.isSpeaking
+    override val error: StateFlow<String?> get() = controller.error
+    override val currentChunk: StateFlow<Int> get() = controller.currentChunk
+    override val totalChunks: StateFlow<Int> get() = controller.totalChunks
+    override val playbackState: StateFlow<PlaybackState> get() = controller.playbackState
+
+    fun updateProvider(provider: TTSProviderSetting?) {
+        controller.setProvider(provider)
+    }
+
+    override fun speak(text: String, flushCalled: Boolean) {
+        val processed = text.stripMarkdown()
+        controller.speak(processed, flushCalled)
+    }
+
+    override fun stop() {
+        controller.stop()
+    }
+
+    override fun pause() {
+        controller.pause()
+        Log.d(TAG, "TTS paused")
+    }
+
+    override fun resume() {
+        controller.resume()
+        Log.d(TAG, "TTS resumed")
+    }
+
+    override fun skipNext() {
+        controller.skipNext()
+    }
+
+    override fun fastForward(ms: Long) {
+        controller.fastForward(ms)
+    }
+
+    override fun setSpeed(speed: Float) {
+        controller.setSpeed(speed)
+    }
+
+    override fun cleanup() {
+        controller.dispose()
+    }
 }

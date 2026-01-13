@@ -34,5 +34,11 @@ dependencies {
     implementation("net.sf.kxml:kxml2:2.3.0")
     implementation(libs.modelcontextprotocol.kotlin.sdk)
     implementation(libs.sqlite.jdbc)
+    implementation(libs.mp3spi)
+    implementation(libs.pdfbox)
+    implementation(libs.poi.ooxml)
+    implementation(libs.zxing.core)
+    implementation(libs.metadata.extractor)
+    implementation(libs.org.json)
     implementation(kotlin("reflect"))
 }

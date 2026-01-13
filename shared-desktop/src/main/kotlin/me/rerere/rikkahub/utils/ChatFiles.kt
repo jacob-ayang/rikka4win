@@ -47,6 +47,10 @@ fun Context.getFileMimeType(uri: Uri): String? {
         "jpg", "jpeg" -> "image/jpeg"
         "webp" -> "image/webp"
         "gif" -> "image/gif"
+        "json" -> "application/json"
+        "pdf" -> "application/pdf"
+        "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         else -> null
     }
 }

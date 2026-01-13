@@ -45,6 +45,10 @@ zxing = "3.5.4"
 quickie-bundled = "1.11.0"
 sonner = "0.4.0"
 sqlite-jdbc = "3.45.2.0"
+mp3spi = "1.9.5.4"
+pdfbox = "2.0.32"
+poi-ooxml = "5.2.5"
+org-json = "20240303"
 leakcanary = "2.14"
 workmanager = "2.11.0"
 reorderable = "3.0.0"
@@ -132,6 +136,10 @@ zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" 
 quickie-bundled = { group = "io.github.g00fy2.quickie", name = "quickie-bundled", version.ref = "quickie-bundled" }
 sonner = { module = "io.github.brdominguez:compose-sonner", version.ref = "sonner" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+mp3spi = { module = "com.googlecode.soundlibs:mp3spi", version.ref = "mp3spi" }
+pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
+poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi-ooxml" }
+org-json = { module = "org.json:json", version.ref = "org-json" }
 leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
