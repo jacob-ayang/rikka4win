@@ -10,6 +10,14 @@ on:
         description: "Mark as prerelease"
         required: false
         default: "false"
+      desktop_runner:
+        description: "Runner label for desktop build"
+        required: false
+        default: "windows-latest"
+      release_runner:
+        description: "Runner label for release job"
+        required: false
+        default: "ubuntu-latest"
 
 jobs:
   # build-android:
@@ -52,7 +60,7 @@ jobs:
   #         path: app/build/outputs/apk/release/*.apk
 
   build-desktop:
-    runs-on: windows-latest
+    runs-on: ${{ inputs.desktop_runner }}
 
     steps:
       - uses: actions/checkout@v4
@@ -95,7 +103,7 @@ jobs:
 
   release:
     needs: [build-desktop]
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.release_runner }}
 
     steps:
       - name: Download ZIP
